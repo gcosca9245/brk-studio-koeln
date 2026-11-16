@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="de" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>BRK Studio – Friseur &amp; Barbershop am Neumarkt, Köln</title>
+  <meta name="description" content="BRK Studio in der Fleischmengergasse 29, direkt am Neumarkt in Köln: Herren- und Damenhaarschnitte, Bart, Balayage und Strähnen. Moderner Look, ehrlicher Service, Kaffee oder Bier inklusive.">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="color-scheme" content="dark light">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="BRK Studio – Friseur &amp; Barbershop am Neumarkt, Köln">
+  <meta property="og:description" content="Moderner Look. Ehrlicher Service. Kaffee oder Bier inklusive.">
+  <meta property="og:image" content="assets/media/hero-poster.webp">
+  <meta property="og:locale" content="de_DE">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script src="assets/js/boot.js"></script>
+</head>
+<body class="bg-night text-white antialiased">
+  <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
+
+  <!-- Kopfzeile: transparent über dem Hero, danach ruhige dunkle Fläche -->
+  <header class="site-header" data-header>
+    <div class="wrap flex items-center justify-between h-full">
+      <a href="#top" class="brand" aria-label="BRK Studio – zum Seitenanfang">
+        <img src="assets/img/logo-light.svg" width="200" height="104" alt="BRK Studio Köln">
+      </a>
+      <nav class="hidden lg:block" aria-label="Hauptnavigation">
+        <ul class="nav-list">
+          <li><a href="#leistungen">Leistungen</a></li>
+          <li><a href="#studio">Studio</a></li>
+          <li><a href="#team">Team</a></li>
+          <li><a href="#galerie">Galerie</a></li>
+          <li><a href="#kontakt">Kontakt</a></li>
+        </ul>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="#buchen" class="btn btn-light btn-sm hidden sm:inline-flex">Termin buchen</a>
+        <button type="button" class="menu-toggle lg:hidden" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu">
+          <span class="sr-only">Menü öffnen</span>
+          <span class="menu-lines" aria-hidden="true"><span></span><span></span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobiles Menü -->
+  <div class="mobile-menu" id="mobile-menu" data-menu hidden>
+    <nav aria-label="Mobile Navigation" class="wrap">
+      <ul>
+        <li><a href="#leistungen" data-menu-link>Leistungen</a></li>
+        <li><a href="#studio" data-menu-link>Studio</a></li>
+        <li><a href="#team" data-menu-link>Team</a></li>
+        <li><a href="#galerie" data-menu-link>Galerie</a></li>
+        <li><a href="#buchen" data-menu-link>Termin buchen</a></li>
+        <li><a href="#kontakt" data-menu-link>Kontakt</a></li>
+      </ul>
+      <p class="mobile-menu__meta">Fleischmengergasse 29 · 50676 Köln<br><a href="https://www.instagram.com/brk.studio.koeln/" target="_blank" rel="noopener">@brk.studio.koeln</a></p>
+    </nav>
+  </div>
+
+  <main id="inhalt">
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="top" aria-labelledby="hero-title" data-hero>
+      <div class="hero__media" data-hero-media aria-hidden="true">
+        <video class="hero__video" data-hero-video muted loop playsinline preload="metadata" poster="assets/media/hero-poster.webp"
+          data-src-desktop="assets/media/hero-desktop.mp4" data-src-mobile="assets/media/hero-mobile.mp4"
+          data-poster-mobile="assets/media/hero-poster-mobile.webp"></video>
+      </div>
+      <div class="hero__shade" aria-hidden="true"></div>
+
+      <div class="wrap hero__inner">
+        <p class="eyebrow eyebrow--light hero__kicker" data-hero-fade>Friseur &amp; Barbershop · Köln Neumarkt</p>
+        <h1 id="hero-title" class="hero__title" data-split>BRK Studio</h1>
+        <div class="hero__bottom">
+          <p class="hero__sub" data-hero-fade>Moderner Look. Ehrlicher Service. Kaffee oder Bier inklusive.</p>
+          <div class="hero__actions" data-hero-fade>
+            <a href="#buchen" class="btn btn-light">Termin buchen</a>
+            <a href="#leistungen" class="link-quiet">Leistungen &amp; Preise</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero__foot wrap" data-hero-fade>
+        <p class="hero__status"><span class="status-dot" data-open-dot aria-hidden="true"></span><span data-open-status>Mo–Sa geöffnet, So geschlossen</span></p>
+        <a href="#leistungen" class="scroll-cue" aria-label="Weiter zu den Leistungen"><span class="scroll-cue__line" aria-hidden="true"></span><span class="scroll-cue__label">Scrollen</span></a>
+        <button type="button" class="video-toggle" data-video-toggle aria-pressed="false">
+          <span class="video-toggle__icon" aria-hidden="true"></span><span data-video-label>Video pausieren</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ LEISTUNGEN ============ -->
+    <section class="section bg-paper text-ink" id="leistungen" aria-labelledby="leistungen-title">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow" data-reveal>Leistungen &amp; Preise</p>
+          <h2 id="leistungen-title" class="h2" data-reveal>Klare Preise.<br>Saubere Arbeit.</h2>
+          <p class="lede" data-reveal>Jeder Termin beginnt mit einer kurzen Beratung. Was du siehst, ist der Preis, den du zahlst.</p>
+        </div>
+
+        <div class="menu-grid">
+          <!-- Herren -->
+          <div class="menu-col" data-reveal-group>
+            <h3 class="menu-col__title">Herren</h3>
+            <ul class="menu-list">
+              <li class="svc" data-reveal-item>
+                <div class="svc__top"><h4 class="svc__name">Waschen · Schneiden · Stylen</h4><p class="svc__price"><span class="sr-only">Preis: </span>36&nbsp;€</p></div>
+                <p class="svc__desc">Beratung, Haarwäsche, Schnitt nach deinem Typ und Styling zum Schluss.</p>
+                <div class="svc__foot"><span class="svc__time">ca. 45 Min.</span><a href="#buchen" class="svc__book" data-book="Waschen · Schneiden · Stylen">Buchen<span class="sr-only">: Waschen, Schneiden, Stylen</span><span class="arrow" aria-hidden="true"></span></a></div>
+              </li>
+              <li class="svc" data-reveal-item>
+                <div class="svc__top"><h4 class="svc__name">Haarschnitt + Bart</h4><p class="svc__price"><span class="sr-only">Preis: </span>45&nbsp;€</p></div>
+                <p class="svc__desc">Schnitt und Bartformen in einem Termin, Konturen sauber nachgezogen.</p>
+                <div class="svc__foot"><span class="svc__time">ca. 1 Std.</span><a href="#buchen" class="svc__book" data-book="Haarschnitt + Bart">Buchen<span class="sr-only">: Haarschnitt und Bart</span><span class="arrow" aria-hidden="true"></span></a></div>
+              </li>
+              <li class="svc" data-reveal-item>
+                <div class="svc__top"><h4 class="svc__name">Fast Cut</h4><p class="svc__price"><span class="sr-only">Preis: </span>25&nbsp;€</p></div>
+                <p class="svc__desc">Nur die Seiten, wenn es zwischen zwei Terminen schnell gehen soll.</p>
+                <div class="svc__foot"><span class="svc__time">ca. 15 Min.</span><a href="#buchen" class="svc__book" data-book="Fast Cut">Buchen<span class="sr-only">: Fast Cut</span><span class="arrow" aria-hidden="true"></span></a></div>
+              </li>
+            </ul>
+          </div>
+          <!-- Damen -->
+          <div class="menu-col" data-reveal-group>
+            <h3 class="menu-col__title">Damen</h3>
+            <ul class="menu-list">
+              <li class="svc" data-reveal-item>
+                <div class="svc__top"><h4 class="svc__name">Schneiden + Föhnen</h4><p class="svc__price"><span class="sr-only">Preis: </span>55–65&nbsp;€</p></div>
+                <p class="svc__desc">Waschen, Schneiden und Föhnen inklusive Conditioner. Der Preis richtet sich nach der Haarlänge.</p>
+                <div class="svc__foot"><span class="svc__time">ca. 1 Std.</span><a href="#buchen" class="svc__book" data-book="Schneiden + Föhnen">Buchen<span class="sr-only">: Schneiden und Föhnen</span><span class="arrow" aria-hidden="true"></span></a></div>
+              </li>
+              <li class="svc" data-reveal-item>
+                <div class="svc__top"><h4 class="svc__name">Balayage</h4><p class="svc__price"><span class="svc__from">ab</span> 249&nbsp;€</p></div>
+                <p class="svc__desc">Frei gemalte, weiche Farbverläufe. Komplett mit Waschen, Schnitt und Föhnen.</p>
+                <div class="svc__foot"><span class="svc__time">ca. 3 Std. 20 Min.</span><a href="#buchen" class="svc__book" data-book="Balayage">Buchen<span class="sr-only">: Balayage</span><span class="arrow" aria-hidden="true"></span></a></div>
+              </li>
+              <li class="svc" data-reveal-item>
+                <div class="svc__top"><h4 class="svc__name">Strähnen</h4><p class="svc__price"><span class="svc__from">ab</span> 155&nbsp;€</p></div>
+                <p class="svc__desc">Das Komplettpaket: Waschen, Schneiden, Färben, Strähnen, Tönen und Föhnen.</p>
+                <div class="svc__foot"><span class="svc__time">ca. 3 Std. 20 Min.</span><a href="#buchen" class="svc__book" data-book="Strähnen">Buchen<span class="sr-only">: Strähnen</span><span class="arrow" aria-hidden="true"></span></a></div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p class="fineprint" data-reveal>Weitere Leistungen wie Schüler- und Studentenschnitt, Glossing oder Föhnen findest du auf <a href="https://www.planity.com/de-DE/brk-studio-50676-koln" target="_blank" rel="noopener">Planity</a>.</p>
+      </div>
+    </section>
+
+    <!-- ============ STUDIO / ATMOSPHÄRE ============ -->
+    <section class="section studio bg-night" id="studio" aria-labelledby="studio-title">
+      <div class="wrap studio__grid">
+        <div class="studio__text">
+          <div class="studio__sticky">
+            <p class="eyebrow eyebrow--light" data-reveal>Das Studio</p>
+            <h2 id="studio-title" class="sr-only">Atmosphäre im BRK Studio</h2>
+            <p class="studio__quote" data-words>Im BRK Studio fühlst du dich nicht wie im Salon, sondern wie im Wohnzimmer. Direkt am Neumarkt in Köln.</p>
+            <dl class="studio__facts" data-reveal>
+              <div><dt>Getränk</dt><dd>Kaffee oder Bier, inklusive</dd></div>
+              <div><dt>Lage</dt><dd>Fleischmengergasse 29, wenige Schritte vom Neumarkt</dd></div>
+              <div><dt>Termine</dt><dd>Online über Planity oder hier auf der Seite anfragen</dd></div>
+            </dl>
+          </div>
+        </div>
+        <div class="studio__images">
+          <figure class="frame frame--wide" data-parallax-frame>
+            <div class="frame__clip"><img data-parallax src="assets/img/real-salon-900.webp" srcset="assets/img/real-salon-900.webp 900w, assets/img/real-salon-1600.webp 1600w" sizes="(min-width: 1024px) 50vw, 100vw" width="1600" height="1200" alt="Der Salon von innen: drei Spiegel, Bedienstühle und ein Herrenstuhl auf dunklem Steinboden" loading="lazy" decoding="async"></div>
+            <figcaption>Der Raum</figcaption>
+          </figure>
+          <div class="studio__pair">
+            <figure class="frame" data-parallax-frame>
+              <div class="frame__clip"><img data-parallax src="assets/img/real-stuhl-600.webp" srcset="assets/img/real-stuhl-600.webp 600w, assets/img/real-stuhl-1000.webp 1000w" sizes="(min-width: 1024px) 25vw, 50vw" width="1000" height="1250" alt="Herrenstuhl mit Fußstütze und Hocker im Studio" loading="lazy" decoding="async"></div>
+              <figcaption>Der Stuhl</figcaption>
+            </figure>
+            <figure class="frame frame--offset" data-parallax-frame>
+              <div class="frame__clip"><img data-parallax src="assets/img/real-spiegel-500.webp" srcset="assets/img/real-spiegel-500.webp 500w, assets/img/real-spiegel-800.webp 800w" sizes="(min-width: 1024px) 25vw, 50vw" width="800" height="1000" alt="Hoher Spiegel, in dem sich die Straße vor dem Studio spiegelt" loading="lazy" decoding="async"></div>
+              <figcaption>Der Spiegel</figcaption>
+            </figure>
+          </div>
+          <div class="studio__pair studio__pair--rev">
+            <figure class="frame frame--offset" data-parallax-frame>
+              <div class="frame__clip"><img data-parallax src="assets/img/real-empfang-500.webp" srcset="assets/img/real-empfang-500.webp 500w, assets/img/real-empfang-800.webp 800w" sizes="(min-width: 1024px) 25vw, 50vw" width="800" height="999" alt="Empfangstresen aus dunklem Holz mit kleinen Sammelfiguren" loading="lazy" decoding="async"></div>
+              <figcaption>Der Empfang</figcaption>
+            </figure>
+            <figure class="frame" data-parallax-frame>
+              <div class="frame__clip"><img data-parallax src="assets/img/real-licht-500.webp" srcset="assets/img/real-licht-500.webp 500w, assets/img/real-licht-800.webp 800w" sizes="(min-width: 1024px) 25vw, 50vw" width="800" height="1000" alt="Deckenspots über zwei Spiegeln" loading="lazy" decoding="async"></div>
+              <figcaption>Das Licht</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TEAM ============ -->
+    <section class="section bg-paper text-ink" id="team" aria-labelledby="team-title">
+      <div class="wrap">
+        <div class="team__head">
+          <div>
+            <p class="eyebrow" data-reveal>Team</p>
+            <h2 id="team-title" class="h2" data-reveal>Zwei Stühle,<br>zwei Handschriften.</h2>
+          </div>
+          <p class="lede team__lede" data-reveal>Wer bei uns sitzt, wird nicht durchgeschleust. Man kennt sich, man redet, und der Schnitt wird so lange gemacht, bis er sitzt.</p>
+        </div>
+        <div class="team__grid">
+          <article class="person person--lead" data-reveal>
+            <figure class="person__photo">
+              <div class="frame__clip"><img src="assets/img/real-burak-420.webp" srcset="assets/img/real-burak-420.webp 420w, assets/img/real-burak-610.webp 610w" sizes="(min-width: 1024px) 34vw, 90vw" width="610" height="763" alt="Burak, Inhaber von BRK Studio" loading="lazy" decoding="async"></div>
+            </figure>
+            <div class="person__body">
+              <h3 class="person__name">Burak</h3>
+              <p class="person__role">Inhaber · 11 Jahre Erfahrung</p>
+              <p class="person__text">Moderne und klassische Herrenschnitte, Bart und Colorationen. Burak hat ein genaues Auge für Übergänge und Konturen und nimmt sich die Zeit, vorher zuzuhören.</p>
+            </div>
+          </article>
+          <article class="person person--second" data-reveal>
+            <figure class="person__photo">
+              <div class="frame__clip"><img src="assets/img/team-angelo-520.webp" srcset="assets/img/team-angelo-520.webp 520w, assets/img/team-angelo-900.webp 900w" sizes="(min-width: 1024px) 26vw, 90vw" width="900" height="1125" alt="Platzhalterbild (Stockfoto) für Angelo" loading="lazy" decoding="async"></div>
+              <figcaption class="placeholder-note">Platzhalterbild</figcaption>
+            </figure>
+            <div class="person__body">
+              <h3 class="person__name">Angelo</h3>
+              <p class="person__role">Friseurmeister</p>
+              <p class="person__text">Klassisches Friseurhandwerk und persönliche Beratung, für Damen wie Herren.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GALERIE ============ -->
+    <section class="section gallery bg-night" id="galerie" aria-labelledby="galerie-title" data-gallery>
+      <div class="wrap gallery__head">
+        <div>
+          <p class="eyebrow eyebrow--light" data-reveal>Galerie</p>
+          <h2 id="galerie-title" class="h2" data-reveal>Schnitt, Farbe, Form.</h2>
+        </div>
+        <p class="gallery__note" data-reveal>Stilbeispiele als Platzhalter (Stockfotos). Eigene Arbeiten zeigt das Studio auf <a href="https://www.instagram.com/brk.studio.koeln/" target="_blank" rel="noopener">Instagram</a>.</p>
+      </div>
+      <div class="gallery__viewport" data-gallery-viewport tabindex="0" role="group" aria-label="Galerie, horizontal scrollbar">
+        <ul class="gallery__track" data-gallery-track>
+          <li class="shot shot--tall"><img src="assets/img/g-textur-520.webp" srcset="assets/img/g-textur-520.webp 520w, assets/img/g-textur-900.webp 900w" sizes="(min-width: 1024px) 28vw, 72vw" width="900" height="1125" alt="Kurzer Textur-Schnitt mit hohem Fade, Seitenprofil" loading="lazy" decoding="async"><span class="shot__cap">Textur &amp; Fade</span></li>
+          <li class="shot shot--wide"><img src="assets/img/g-wellen-640.webp" srcset="assets/img/g-wellen-640.webp 640w, assets/img/g-wellen-1100.webp 1100w" sizes="(min-width: 1024px) 40vw, 86vw" width="1100" height="733" alt="Stylistin formt lange Wellen" loading="lazy" decoding="async"><span class="shot__cap">Wellen</span></li>
+          <li class="shot shot--tall shot--low"><img src="assets/img/g-hochsteck-520.webp" srcset="assets/img/g-hochsteck-520.webp 520w, assets/img/g-hochsteck-900.webp 900w" sizes="(min-width: 1024px) 26vw, 72vw" width="900" height="1200" alt="Glatter Dutt im Profil" loading="lazy" decoding="async"><span class="shot__cap">Hochgesteckt</span></li>
+          <li class="shot shot--tall"><img src="assets/img/g-fade-520.webp" srcset="assets/img/g-fade-520.webp 520w, assets/img/g-fade-900.webp 900w" sizes="(min-width: 1024px) 26vw, 72vw" width="900" height="1200" alt="Skin Fade mit kurzem Deckhaar und Bart, Seitenansicht" loading="lazy" decoding="async"><span class="shot__cap">Skin Fade</span></li>
+          <li class="shot shot--square"><img src="assets/img/g-bob-640.webp" srcset="assets/img/g-bob-640.webp 640w, assets/img/g-bob-1100.webp 1100w" sizes="(min-width: 1024px) 32vw, 80vw" width="1100" height="1009" alt="Bob mit Pony im Profil vor dunklem Hintergrund" loading="lazy" decoding="async"><span class="shot__cap">Bob</span></li>
+          <li class="shot shot--tall shot--low"><img src="assets/img/g-profil-520.webp" srcset="assets/img/g-profil-520.webp 520w, assets/img/g-profil-900.webp 900w" sizes="(min-width: 1024px) 26vw, 72vw" width="900" height="1200" alt="Klassischer Herrenschnitt mit Volumen, Profil" loading="lazy" decoding="async"><span class="shot__cap">Klassisch</span></li>
+          <li class="shot shot--wide"><img src="assets/img/g-scheitel-640.webp" srcset="assets/img/g-scheitel-640.webp 640w, assets/img/g-scheitel-1100.webp 1100w" sizes="(min-width: 1024px) 40vw, 86vw" width="1100" height="733" alt="Seitenscheitel mit Bart" loading="lazy" decoding="async"><span class="shot__cap">Seitenscheitel</span></li>
+          <li class="shot shot--tall"><img src="assets/img/g-lang-520.webp" srcset="assets/img/g-lang-520.webp 520w, assets/img/g-lang-900.webp 900w" sizes="(min-width: 1024px) 26vw, 72vw" width="900" height="1200" alt="Langes, glattes Haar in Bewegung" loading="lazy" decoding="async"><span class="shot__cap">Lang &amp; glatt</span></li>
+          <li class="shot shot--tall shot--low"><img src="assets/img/g-schnitt-520.webp" srcset="assets/img/g-schnitt-520.webp 520w, assets/img/g-schnitt-900.webp 900w" sizes="(min-width: 1024px) 26vw, 72vw" width="900" height="1200" alt="Nacken wird mit der Maschine ausrasiert" loading="lazy" decoding="async"><span class="shot__cap">Konturen</span></li>
+          <li class="shot shot--wide"><img src="assets/img/g-klassik-640.webp" srcset="assets/img/g-klassik-640.webp 640w, assets/img/g-klassik-1100.webp 1100w" sizes="(min-width: 1024px) 40vw, 86vw" width="1100" height="736" alt="Haar wird mit Kamm und Händen in Form gebracht" loading="lazy" decoding="async"><span class="shot__cap">Finish</span></li>
+        </ul>
+      </div>
+      <div class="wrap gallery__progress" aria-hidden="true"><span class="gallery__bar"><span data-gallery-bar></span></span></div>
+    </section>
+
+    <!-- ============ BUCHUNG ============ -->
+    <section class="section bg-paper text-ink" id="buchen" aria-labelledby="buchen-title">
+      <div class="wrap booking">
+        <div class="booking__intro">
+          <p class="eyebrow" data-reveal>Termin</p>
+          <h2 id="buchen-title" class="h2" data-reveal>Such dir<br>deinen Stuhl aus.</h2>
+          <p class="lede" data-reveal>Leistung wählen, Tag wählen, Uhrzeit wählen. Wir bestätigen deinen Wunschtermin persönlich.</p>
+          <div class="planity" data-reveal>
+            <p class="planity__label">Lieber sofort verbindlich?</p>
+            <a class="btn btn-dark" href="https://www.planity.com/de-DE/brk-studio-50676-koln" target="_blank" rel="noopener">Direkt bei Planity buchen<span class="ext" aria-hidden="true"></span><span class="sr-only"> (öffnet in neuem Tab)</span></a>
+            <p class="planity__hint">Echtzeit-Kalender, Bestätigung per E-Mail.</p>
+          </div>
+        </div>
+
+        <div class="booking__panel" data-reveal>
+          <p class="demo-flag"><span class="demo-flag__dot" aria-hidden="true"></span>Demo: Dieses Formular sendet keine Daten. Die freien Zeiten sind simuliert.</p>
+          <form class="booking__form" data-booking novalidate>
+            <fieldset class="field-group">
+              <legend class="label">Leistung</legend>
+              <div class="svc-pick" role="radiogroup" aria-describedby="err-service">
+                <p class="svc-pick__group">Herren</p>
+                <label class="pill"><input type="radio" name="service" value="Waschen · Schneiden · Stylen" data-duration="45"><span>Waschen · Schneiden · Stylen <em>36&nbsp;€</em></span></label>
+                <label class="pill"><input type="radio" name="service" value="Haarschnitt + Bart" data-duration="60"><span>Haarschnitt + Bart <em>45&nbsp;€</em></span></label>
+                <label class="pill"><input type="radio" name="service" value="Fast Cut" data-duration="15"><span>Fast Cut <em>25&nbsp;€</em></span></label>
+                <p class="svc-pick__group">Damen</p>
+                <label class="pill"><input type="radio" name="service" value="Schneiden + Föhnen" data-duration="60"><span>Schneiden + Föhnen <em>55–65&nbsp;€</em></span></label>
+                <label class="pill"><input type="radio" name="service" value="Balayage" data-duration="200"><span>Balayage <em>ab 249&nbsp;€</em></span></label>
+                <label class="pill"><input type="radio" name="service" value="Strähnen" data-duration="200"><span>Strähnen <em>ab 155&nbsp;€</em></span></label>
+              </div>
+              <p class="error" id="err-service" data-error="service" aria-live="polite"></p>
+            </fieldset>
+
+            <fieldset class="field-group">
+              <legend class="label">Datum</legend>
+              <div class="days" data-days role="radiogroup" aria-describedby="err-date"></div>
+              <p class="error" id="err-date" data-error="date" aria-live="polite"></p>
+            </fieldset>
+
+            <fieldset class="field-group">
+              <legend class="label">Uhrzeit <span class="label__hint" data-slot-hint>Bitte zuerst einen Tag wählen</span></legend>
+              <div class="slots" data-slots role="radiogroup" aria-describedby="err-time"></div>
+              <p class="error" id="err-time" data-error="time" aria-live="polite"></p>
+            </fieldset>
+
+            <div class="field-row">
+              <div class="field">
+                <label class="label" for="f-name">Name</label>
+                <input class="input" id="f-name" name="name" type="text" autocomplete="name" placeholder="Vor- und Nachname…" aria-describedby="err-name" required>
+                <p class="error" id="err-name" data-error="name" aria-live="polite"></p>
+              </div>
+              <div class="field">
+                <label class="label" for="f-phone">Telefon</label>
+                <input class="input" id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="z. B. 0171 2345678…" aria-describedby="err-phone" required>
+                <p class="error" id="err-phone" data-error="phone" aria-live="polite"></p>
+              </div>
+            </div>
+            <div class="field">
+              <label class="label" for="f-msg">Nachricht <span class="label__hint">optional</span></label>
+              <textarea class="input input--area" id="f-msg" name="message" rows="3" autocomplete="off" placeholder="Wünsche, Haarlänge, Referenzbild auf Instagram…"></textarea>
+            </div>
+            <div class="booking__submit">
+              <button type="submit" class="btn btn-dark btn-wide">Termin anfragen</button>
+              <p class="booking__summary" data-summary aria-live="polite"></p>
+            </div>
+          </form>
+
+          <div class="booking__done" data-booking-done hidden tabindex="-1">
+            <p class="eyebrow">Demo-Bestätigung</p>
+            <h3 class="h3" data-done-title>Danke.</h3>
+            <p class="booking__done-text" data-done-text></p>
+            <p class="booking__done-note">Dies ist eine Vorschau. Es wurde nichts gesendet. Für einen verbindlichen Termin nutze bitte Planity.</p>
+            <div class="booking__done-actions">
+              <a class="btn btn-dark" href="https://www.planity.com/de-DE/brk-studio-50676-koln" target="_blank" rel="noopener">Bei Planity buchen<span class="sr-only"> (öffnet in neuem Tab)</span></a>
+              <button type="button" class="link-quiet link-quiet--dark" data-booking-reset>Neue Anfrage</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ KONTAKT ============ -->
+    <section class="section bg-night" id="kontakt" aria-labelledby="kontakt-title">
+      <div class="wrap contact">
+        <div class="contact__info">
+          <p class="eyebrow eyebrow--light" data-reveal>Kontakt &amp; Anfahrt</p>
+          <h2 id="kontakt-title" class="h2" data-reveal>Fleischmengergasse 29</h2>
+          <address class="contact__address" data-reveal>50676 Köln<br>Ein paar Schritte vom Neumarkt</address>
+          <div class="hours" data-reveal>
+            <h3 class="hours__title">Öffnungszeiten</h3>
+            <dl class="hours__list" data-hours>
+              <div data-day="1"><dt>Montag</dt><dd>12–19 Uhr</dd></div>
+              <div data-day="2"><dt>Dienstag</dt><dd>12–18 Uhr</dd></div>
+              <div data-day="3"><dt>Mittwoch</dt><dd>12–18 Uhr</dd></div>
+              <div data-day="4"><dt>Donnerstag</dt><dd>12–19 Uhr</dd></div>
+              <div data-day="5"><dt>Freitag</dt><dd>12–19 Uhr</dd></div>
+              <div data-day="6"><dt>Samstag</dt><dd>12–20 Uhr</dd></div>
+              <div data-day="0"><dt>Sonntag</dt><dd>geschlossen</dd></div>
+            </dl>
+          </div>
+          <ul class="contact__links" data-reveal>
+            <li><a href="https://www.instagram.com/brk.studio.koeln/" target="_blank" rel="noopener"><span class="contact__k">Instagram</span><span class="contact__v">@brk.studio.koeln</span></a></li>
+            <li><a href="https://www.google.com/maps/search/?api=1&amp;query=Fleischmengergasse%2029%2C%2050676%20K%C3%B6ln" target="_blank" rel="noopener"><span class="contact__k">Route</span><span class="contact__v">In Google Maps öffnen</span></a></li>
+            <li><a href="#buchen"><span class="contact__k">Termin</span><span class="contact__v">Online anfragen</span></a></li>
+          </ul>
+        </div>
+        <div class="contact__visual">
+          <figure class="frame frame--facade" data-reveal>
+            <div class="frame__clip"><img src="assets/img/real-fassade-900.webp" srcset="assets/img/real-fassade-900.webp 900w, assets/img/real-fassade-1600.webp 1600w" sizes="(min-width: 1024px) 55vw, 100vw" width="1600" height="890" alt="Ladenfront von BRK Studio in der Fleischmengergasse 29" loading="lazy" decoding="async"></div>
+          </figure>
+          <div class="map" data-map data-reveal>
+            <div class="map__placeholder" data-map-placeholder>
+              <svg class="map__grid" viewBox="0 0 600 260" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1"><path d="M0 70 H600 M0 160 H600 M0 230 H600 M110 0 V260 M260 0 V260 M420 0 V260 M540 0 V260" opacity=".25"/><path d="M0 210 L600 40" opacity=".45"/></g><circle cx="300" cy="125" r="5" fill="#C9A96E"/><circle cx="300" cy="125" r="16" fill="none" stroke="#C9A96E" stroke-width="1"/></svg>
+              <div class="map__copy">
+                <p class="map__title">Karte</p>
+                <p class="map__text">Beim Laden der Karte werden Daten an Google übertragen.</p>
+                <button type="button" class="btn btn-light btn-sm" data-map-load>Google Maps laden</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="wrap footer__grid">
+      <img class="footer__logo" src="assets/img/logo-light.svg" width="200" height="104" alt="BRK Studio Köln" loading="lazy">
+      <p class="footer__claim">Moderner Look. Ehrlicher Service.<br>Kaffee oder Bier inklusive.</p>
+      <nav aria-label="Rechtliches und Social Media" class="footer__nav">
+        <a href="impressum.html">Impressum</a>
+        <a href="datenschutz.html">Datenschutz</a>
+        <a href="https://www.instagram.com/brk.studio.koeln/" target="_blank" rel="noopener">Instagram</a>
+        <a href="#top">Nach oben</a>
+      </nav>
+    </div>
+    <div class="wrap footer__base">
+      <p>© <span data-year>2026</span> BRK Studio · Fleischmengergasse 29 · 50676 Köln</p>
+      <p>Website-Entwurf. Stilbeispiele und das Teamfoto von Angelo sind Platzhalter.</p>
+    </div>
+  </footer>
+
+  <script src="assets/vendor/gsap.min.js" defer></script>
+  <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="assets/vendor/lenis.min.js" defer></script>
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>

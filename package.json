@@ -1,0 +1,13 @@
+{
+  "name": "brk-studio-koeln",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One-Page-Website für BRK Studio – Friseur & Barbershop am Neumarkt, Köln (Entwurf)",
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i src/input.css -o assets/css/styles.css --minify",
+    "watch:css": "tailwindcss -c tailwind.config.js -i src/input.css -o assets/css/styles.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}
