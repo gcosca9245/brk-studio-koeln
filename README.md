@@ -26,6 +26,7 @@ Monochromes Editorial-Design: tiefes Schwarz und Off-White im Wechsel, Haarlinie
 - Buchung: 14 Tage, Sonntag geschlossen, Zeiten nach Öffnungszeiten und Dauer der Leistung, „Buchen“ bei jeder Leistung wählt sie vor, Validierung mit Fokus auf das erste Fehlerfeld
 - Karte als 2-Klick-Lösung (Google Maps lädt erst nach Klick)
 - Mini-Spiel „Einmal Burak sein“ (`#spiel`): eigene monochrome Canvas-Illustration (Burak als Silhouette ohne Gesicht, Gast im Barberstuhl, goldene Schere). Rund 900 Strähnen wachsen aus der Kopfhaut und sind wie eine echte Frisur gekämmt: oben nach hinten, an der Seite schräg nach hinten unten, ab dem Hinterkopf fallen sie weich. Geschnitten wird nur bei gedrückter Maus oder aufgesetztem Finger: Jede Strähne wird exakt am Schnittpunkt mit dem Scherenweg gekürzt (Strecke gegen Strecke, mit zusammengefassten Pointer-Events auch bei schnellen Bewegungen lückenlos), das abgeschnittene Stück fällt als eigenes Teil zu Boden. Die Zielform (Fade, Classic, Buzz) liegt als gestrichelte Kontur über dem Kopf; der Fortschritt misst die Nähe zur Zielkontur, zu kurz kostet nur wenig. Am Ende macht Burak den Feinschliff. Mobil ist das Bild auf den Kopf gezoomt. Tastatur: Spielfeld fokussieren und Leertaste (oder Button „Schneiden“), Burak schneidet dann abschnittsweise exakt auf die Kontur; Fortschritt über `aria-live`; bei reduzierter Bewegung fallen die Strähnen ohne Physik.
+- Effekte (`assets/js/fx.js`): **Intro** beim ersten Besuch je Sitzung (eine Schere schneidet das Bild waagerecht, das Hero-Video öffnet sich an der Schnittlinie, ca. 1,2 s, Klick/Taste/Scrollen überspringt, nicht bei Sprungzielen und reduzierter Bewegung); **Scheren-Cursor** nur bei feinem Zeiger (öffnet sich über Bildern, „Ansehen“ über der Galerie, normaler Cursor in Formularfeldern und im Spiel); **Abschnittswechsel als horizontaler Schnitt** (Maskenkante mit Linie und Schere, auch beim Öffnen von Impressum und Datenschutz); **Burak als Linienfigur** ab 1200 px am linken Rand mit einer kleinen Geschichte je Abschnitt bis zum Spiel, dort übergibt er die Schere; **„Wohnzimmer“** über die volle Breite mit echten Salonfotos in den Buchstaben (SVG-Maske, auf dem Desktop angeheftet und von groß auf passend gezoomt, mobil zweizeilig)
 - Nur `transform` und `opacity` werden animiert; `prefers-reduced-motion`: kein Lenis, keine Parallaxe, Video startet nicht, alle Inhalte sofort sichtbar
 - Alle Schriften, Bilder und Videos liegen im Repository; ohne Klick auf die Karte werden keine Drittanbieter geladen
 
@@ -46,6 +47,7 @@ konto/                   Kundenkonto
 admin/                   Studio-Pult für Burak
 supabase/schema.sql      Datenbankschema mit RLS für den Echtbetrieb
 assets/js/game.js        Mini-Spiel „Einmal Burak sein“ (Canvas, ohne Bibliotheken)
+assets/js/fx.js          Intro, Scheren-Cursor, Schnittkanten, Burak-Figur, Wohnzimmer
 assets/vendor/           gsap.min.js, ScrollTrigger.min.js, lenis.min.js
 assets/fonts/            Inter (variabel, Gewicht + optische Größe)
 assets/img/              Logos (SVG), Fotos (WebP)

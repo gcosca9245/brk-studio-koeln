@@ -232,7 +232,9 @@
 
   /* Hero-Intro: Ken-Burns-Auszoomen des Videos (CSS), Zeichen steigen aus der Maske */
   requestAnimationFrame(() => root.classList.add('is-loaded'));
-  const intro = gsap.timeline({ delay: 0.15 });
+  const waitIntro = root.classList.contains('intro-on');
+  const intro = gsap.timeline({ delay: waitIntro ? 0 : 0.15, paused: waitIntro });
+  if (waitIntro) window.addEventListener('brk:intro-done', () => intro.play(), { once: true });
   intro.fromTo('.hero__title .char', { y: 0, yPercent: 105 }, { yPercent: 0, duration: 1.25, ease: EASE, stagger: 0.045 }, 0)
     .to('[data-hero-fade]', { opacity: 1, y: 0, duration: 1, ease: 'power3.out', stagger: 0.08 }, 0.45);
 
