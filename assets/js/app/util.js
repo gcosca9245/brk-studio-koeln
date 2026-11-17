@@ -69,4 +69,16 @@ export async function verifyPassword(password, rec) {
   for (let i = 0; i < h.hash.length; i++) diff |= h.hash.charCodeAt(i) ^ rec.hash.charCodeAt(i);
   return diff === 0;
 }
-export const passwordProblem = (p) => (String(p).length < 10 ? 'Mindestens 10 Zeichen.' : !/[A-Za-zÄÖÜäöüß]/.test(p) || !/\d/.test(p) ? 'Bitte Buchstaben und Ziffern kombinieren.' : '');
+/* Passwortregeln: Länge zuerst (NIST 800-63B), dazu Buchstaben + Ziffern, keine Allerweltspasswörter,
+   nicht die E-Mail. Im Supabase-Betrieb prüft Supabase Auth zusätzlich serverseitig (inkl. Leak-Check). */
+const COMMON_PW = ['passwort123', 'password123', '1234567890', 'qwertz1234', 'qwerty1234', 'hallo12345', 'brkstudio1', 'brkstudio123', 'koeln12345', 'friseur123', 'abcdef1234', 'iloveyou12'];
+export const passwordProblem = (p, email = '') => {
+  p = String(p);
+  if (p.length < 10) return 'Mindestens 10 Zeichen.';
+  if (p.length > 128) return 'Höchstens 128 Zeichen.';
+  if (!/[A-Za-zÄÖÜäöüß]/.test(p) || !/\d/.test(p)) return 'Bitte Buchstaben und Ziffern kombinieren.';
+  const low = p.toLowerCase();
+  if (COMMON_PW.includes(low) || /^(.)\1+$/.test(p)) return 'Dieses Passwort ist zu leicht zu erraten.';
+  if (email && low.includes(String(email).split('@')[0].toLowerCase()) && String(email).split('@')[0].length >= 4) return 'Das Passwort darf die E-Mail nicht enthalten.';
+  return '';
+};

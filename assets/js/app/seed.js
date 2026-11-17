@@ -8,7 +8,12 @@ const H = (h, m = 0) => h * 60 + m;
 export const DEMO_ACCOUNTS = {
   admin: { email: 'burak@brk-studio.demo', password: 'Burak#Demo2026' },
   customer: { email: 'kunde@brk-studio.demo', password: 'Kunde#Demo2026' },
+  staff: { email: 'angelo@brk-studio.demo', password: 'Angelo#Demo2026' },
 };
+
+/** Demo-Zugang Mitarbeiter (Rolle staff): Kalender, Kasse, Kunden – keine Buchhaltung. */
+export const STAFF_USER = { id: 'us_angelo', role: 'staff', staffId: 'st_angelo', name: 'Angelo', email: 'angelo@brk-studio.demo', phone: '', example: true,
+  pass: { alg: 'PBKDF2-SHA256', iter: 120000, salt: 'QLubee4wbluJr8jL3gQWlg==', hash: 'WpPdHKICN24Tf/cOKitFy3fonkqCObfVpiY8X022ewY=' } };
 
 export function buildSeed(today) {
   const settings = {

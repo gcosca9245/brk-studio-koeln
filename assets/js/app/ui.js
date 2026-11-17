@@ -80,7 +80,7 @@ export function slotGrid(slots, selected, name = 'time') {
 /* ---------- Kopfzeile: Konto-Link je nach Anmeldung ---------- */
 export async function initChrome() {
   const u = await api.user();
-  $$('[data-account-link]').forEach((a) => { a.textContent = u ? (u.role === 'admin' ? 'Studio-Pult' : u.name.split(' ')[0]) : 'Anmelden'; if (u && u.role === 'admin') a.href = a.dataset.admin || a.href; });
+  $$('[data-account-link]').forEach((a) => { a.textContent = u ? (u.role !== 'customer' ? 'Studio-Pult' : u.name.split(' ')[0]) : 'Anmelden'; if (u && u.role !== 'customer') a.href = a.dataset.admin || a.href; });
   $$('[data-demo-reset]').forEach((b) => b.addEventListener('click', async () => {
     if (!(await confirmDialog('Demo zurücksetzen?', 'Alle in diesem Browser gespeicherten Termine, Konten und Bewertungen werden gelöscht und die Beispieldaten neu geladen.', 'Zurücksetzen', true))) return;
     await api.resetDemo();
