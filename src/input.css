@@ -53,7 +53,7 @@
   .h2 { font-size: clamp(2.1rem, 4.2vw, 3.5rem); line-height: 1.04; letter-spacing: -0.035em; font-weight: 800; margin-top: 1.25rem; }
   .h3 { font-size: clamp(1.6rem, 2.6vw, 2.2rem); line-height: 1.1; letter-spacing: -0.03em; font-weight: 800; }
   .lede { font-size: clamp(1.0625rem, 1.3vw, 1.1875rem); color: var(--iron); max-width: 34rem; margin-top: 1.5rem; }
-  .bg-night .lede { color: var(--ash); }
+  section.bg-night .lede { color: var(--ash); }
   .fineprint { margin-top: 3rem; font-size: .9375rem; color: var(--iron); }
   .fineprint a, .gallery__note a { text-decoration: underline; text-underline-offset: .25em; text-decoration-thickness: 1px; }
 
@@ -319,6 +319,44 @@
   .footer__nav a { display: inline-flex; min-height: 44px; align-items: center; color: rgba(255,255,255,.8); }
   .footer__nav a:hover { color: #fff; }
   .footer__base { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 2rem; margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line-dark); font-size: .8125rem; color: var(--ash); }
+
+  /* ---------- Mini-Spiel „Einmal Burak sein“: Spiegel mit Rundbogen ---------- */
+  .btn-outline { background: transparent; color: var(--ink); border-color: rgba(26,26,26,.35); }
+  @media (hover: hover) and (pointer: fine) { .btn-outline:hover { border-color: var(--ink); box-shadow: 0 12px 28px -16px rgba(10,10,10,.4); } }
+  .game-sec { background: #fff; color: var(--ink); border-top: 1px solid var(--line-light); }
+  .game { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem; grid-template-areas: "intro" "stage" "panel"; }
+  .game > * { min-width: 0; }
+  .game__intro { grid-area: intro; }
+  .game__stage { grid-area: stage; margin: 0; }
+  .game__panel { grid-area: panel; display: grid; gap: 2rem; align-content: start; }
+  @media (min-width: 1024px) {
+    .game { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-rows: auto 1fr; grid-template-areas: "stage intro" "stage panel"; column-gap: clamp(3rem, 6vw, 7rem); row-gap: 2.75rem; align-items: end; }
+    .game__panel { align-self: start; }
+  }
+  .mirror { position: relative; aspect-ratio: 100 / 81; max-height: 80vh; margin-inline: auto; background: var(--paper); border: 1px solid rgba(26,26,26,.22); border-radius: 999px 999px 0 0; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; outline-offset: 6px; }
+  .mirror::after { content: ''; position: absolute; inset: 9px 9px 0; border: 1px solid var(--line-light); border-bottom: 0; border-radius: inherit; pointer-events: none; }
+  .mirror__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  @media (pointer: fine) { .mirror__canvas { cursor: none; } }
+  .mirror__hint { position: absolute; left: 50%; bottom: 1.1rem; transform: translateX(-50%); font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; color: var(--iron); white-space: nowrap; pointer-events: none; transition: opacity .5s ease; }
+  .mirror.is-playing .mirror__hint { opacity: 0; }
+  @media (max-width: 639px) { .mirror__hint { display: none; } }
+  @media (max-width: 1023px) { .game__progress { order: -1; } }
+  .game__caption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .25rem 1.5rem; margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--line-light); font-size: .8125rem; color: var(--iron); }
+  .game__styles { border: 0; padding: 0; margin: 0; min-width: 0; }
+  .game__pills { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .game__meter { display: flex; justify-content: space-between; align-items: baseline; font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; }
+  .game__pct { font-size: 1.5rem; letter-spacing: -0.02em; font-weight: 700; font-variant-numeric: tabular-nums; text-transform: none; }
+  .game__bar { position: relative; height: 1px; margin-top: .75rem; background: var(--line-light); overflow: hidden; }
+  .game__bar span { position: absolute; inset: 0; background: var(--ink); transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease-out); }
+  .game__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.75rem; }
+  .game__keys { width: 100%; font-size: .8125rem; color: var(--iron); }
+  .game__done { padding-top: 1.75rem; border-top: 1px solid var(--line-light); }
+  .game__done-title { font-size: clamp(1.6rem, 2.6vw, 2.2rem); line-height: 1.1; letter-spacing: -0.03em; font-weight: 800; }
+  .game__done-title:focus { outline: none; }
+  .game__done-text { margin-top: .35rem; color: var(--iron); }
+  .game__done-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.75rem; margin-top: 1.5rem; }
+  .js.motion .game__done:not([hidden]) { animation: game-in .7s var(--ease-out) both; }
+  @keyframes game-in { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { opacity: 1; transform: none; } }
 
   /* ---------- Rechtliche Unterseiten ---------- */
   .legal { padding-top: calc(var(--header-h) + 4rem); padding-bottom: 6rem; max-width: 48rem; }
