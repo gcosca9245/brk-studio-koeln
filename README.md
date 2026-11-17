@@ -25,6 +25,7 @@ Monochromes Editorial-Design: tiefes Schwarz und Off-White im Wechsel, Haarlinie
 - Galerie: ab 1024 px horizontal angeheftet, mobil natives Wischen mit Scroll-Snap
 - Buchung: 14 Tage, Sonntag geschlossen, Zeiten nach Öffnungszeiten und Dauer der Leistung, „Buchen“ bei jeder Leistung wählt sie vor, Validierung mit Fokus auf das erste Fehlerfeld
 - Karte als 2-Klick-Lösung (Google Maps lädt erst nach Klick)
+- Mini-Spiel „Einmal Burak sein“ (`#spiel`): eigene monochrome Canvas-Illustration (Burak als Silhouette ohne Gesicht, Gast im Barberstuhl, goldene Schere). Mit Maus oder Finger über die Haare fahren: rund 380 einzelne Strähnen werden gekürzt und fallen mit leichter Physik zu Boden. Stile Fade, Classic und Buzz, Fortschritt in Prozent, „Termin buchen“ wählt die passende Leistung vor. Pointer Events, `touch-action: none` nur auf dem Spielfeld, `data-lenis-prevent`, Schleife nur bei Sichtbarkeit (IntersectionObserver), devicePixelRatio bis 2. Tastatur: Spielfeld fokussieren und Leertaste (oder Button „Schneiden“), Fortschritt über `aria-live`; bei reduzierter Bewegung fallen die Strähnen ohne Physik direkt zu Boden
 - Nur `transform` und `opacity` werden animiert; `prefers-reduced-motion`: kein Lenis, keine Parallaxe, Video startet nicht, alle Inhalte sofort sichtbar
 - Alle Schriften, Bilder und Videos liegen im Repository; ohne Klick auf die Karte werden keine Drittanbieter geladen
 
@@ -39,6 +40,7 @@ src/input.css            Quell-CSS (Tailwind + Komponenten, kommentiert)
 assets/css/styles.css    kompiliertes CSS
 assets/js/boot.js        setzt js/motion-Klassen im <head>
 assets/js/main.js        Scroll-Choreografie, Menü, Video, Buchung, Karte
+assets/js/game.js        Mini-Spiel „Einmal Burak sein“ (Canvas, ohne Bibliotheken)
 assets/vendor/           gsap.min.js, ScrollTrigger.min.js, lenis.min.js
 assets/fonts/            Inter (variabel, Gewicht + optische Größe)
 assets/img/              Logos (SVG), Fotos (WebP)
