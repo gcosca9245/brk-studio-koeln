@@ -737,3 +737,138 @@
   .hero__video { transform: none; }
   [data-parallax] { transform: none; }
 }
+
+/* =========================================================
+   Effekte (assets/js/fx.js): Intro, Scheren-Cursor, Schnittkanten,
+   Burak als Linienfigur, „Wohnzimmer“. Nur transform und opacity.
+   ========================================================= */
+/* Scherensymbol (geteilt) */
+.sc__b circle, .sc__b path, .sc__pin { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+.sc__b { transform-box: view-box; transform-origin: 20px 12px; transition: transform .22s cubic-bezier(.2,.8,.2,1); }
+.sc__b--1 { transform: rotate(-7deg); }
+.sc__b--2 { transform: rotate(7deg); }
+
+/* 1 Intro */
+.intro { display: none; }
+.intro-on .intro { display: block; position: fixed; inset: 0; z-index: 200; pointer-events: auto; cursor: default; }
+.intro-on body { overflow: hidden; }
+.intro__half { position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; will-change: transform; transition: transform .62s cubic-bezier(.76,0,.24,1); }
+.intro__half--top { top: 0; }
+.intro__half--bot { bottom: 0; }
+.intro__img { position: absolute; left: 0; right: 0; height: 100vh; height: 100lvh; background: #0A0A0A url("../media/hero-poster.webp") center / cover no-repeat; }
+.intro--mobile .intro__img { background-image: url("../media/hero-poster-mobile.webp"); }
+.intro__img::after { content: ''; position: absolute; inset: 0; background: rgba(10,10,10,.55); }
+.intro__half--top .intro__img { top: 0; }
+.intro__half--bot .intro__img { bottom: 0; }
+.intro__cut { position: absolute; left: 0; right: 0; top: 50%; height: 0; color: #F5F5F5; }
+.intro__line { position: absolute; left: 0; right: 0; top: -.5px; height: 1px; background: #F5F5F5; transform: scaleX(0); transform-origin: left center; transition: transform .5s cubic-bezier(.6,0,.3,1), opacity .2s ease; }
+.intro__sc { position: absolute; left: 0; top: -18px; width: 60px; height: 36px; transform: translateX(-64px); transition: transform .5s cubic-bezier(.6,0,.3,1), opacity .2s ease; }
+.intro__sc svg { width: 60px; height: 36px; display: block; }
+.intro__sc .sc__b { animation: brk-snip .125s ease-in-out 4 alternate; animation-play-state: paused; }
+.intro__skip { position: absolute; left: 50%; bottom: 2rem; transform: translateX(-50%); font-size: .6875rem; letter-spacing: .22em; text-transform: uppercase; color: rgba(245,245,245,.55); white-space: nowrap; transition: opacity .2s ease; }
+.intro-run .intro__line { transform: scaleX(1); }
+.intro-run .intro__sc { transform: translateX(calc(100vw + 8px)); }
+.intro-run .intro__sc .sc__b { animation-play-state: running; }
+.intro-run .intro__half { transition-delay: .5s; }
+.intro-run .intro__half--top { transform: translateY(-101%); }
+.intro-run .intro__half--bot { transform: translateY(101%); }
+.intro-run .intro__line, .intro-run .intro__sc { opacity: 1; }
+.intro-run .intro__skip { opacity: 0; transition-delay: .4s; }
+.intro.is-out, .intro.is-skip { opacity: 0; transition: opacity .28s ease; pointer-events: none; }
+.intro.is-out .intro__line, .intro.is-out .intro__sc { opacity: 0; }
+@keyframes brk-snip { from { transform: rotate(-16deg); } to { transform: rotate(0deg); } }
+.intro__sc .sc__b--2 { animation-name: brk-snip2; }
+@keyframes brk-snip2 { from { transform: rotate(16deg); } to { transform: rotate(0deg); } }
+
+/* 2 Scheren-Cursor */
+.cursor { position: fixed; left: 0; top: 0; z-index: 150; pointer-events: none; transform: translate3d(-100px,-100px,0); }
+.cursor__sc { position: absolute; left: -6px; top: -12px; width: 40px; height: 24px; color: #fff; mix-blend-mode: difference; opacity: 0; transform: scale(.72); transform-origin: 6px 12px; transition: opacity .2s ease, transform .3s cubic-bezier(.2,.8,.2,1); }
+.cursor__sc svg { width: 40px; height: 24px; display: block; overflow: visible; }
+.cursor.is-on .cursor__sc { opacity: 1; }
+.cursor[data-state="link"] .cursor__sc { transform: scale(.62); }
+.cursor[data-state="link"] .sc__b--1, .cursor[data-state="link"] .sc__b--2 { transform: rotate(0deg); }
+.cursor[data-state="open"] .cursor__sc { transform: scale(1); }
+.cursor[data-state="open"] .sc__b--1 { transform: rotate(-24deg); }
+.cursor[data-state="open"] .sc__b--2 { transform: rotate(24deg); }
+.cursor[data-state="view"] .cursor__sc { transform: scale(.9); }
+.cursor[data-state="view"] .sc__b--1 { transform: rotate(-20deg); }
+.cursor[data-state="view"] .sc__b--2 { transform: rotate(20deg); }
+.cursor[data-state="native"] .cursor__sc { opacity: 0; }
+.cursor.is-snip .sc__b--1 { animation: brk-snip .09s ease-in 2 alternate-reverse; }
+.cursor.is-snip .sc__b--2 { animation: brk-snip2 .09s ease-in 2 alternate-reverse; }
+.cursor__label { position: absolute; left: 30px; top: 14px; padding: .45rem .7rem .4rem; border-radius: 999px; background: #F5F5F5; color: #0A0A0A; font-size: .625rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; opacity: 0; transform: translateY(4px) scale(.9); transform-origin: left top; transition: opacity .2s ease, transform .3s cubic-bezier(.2,.8,.2,1); }
+.cursor[data-state="view"] .cursor__label { opacity: 1; transform: none; }
+.has-cursor, .has-cursor body, .has-cursor a, .has-cursor button, .has-cursor label, .has-cursor summary, .has-cursor select, .has-cursor [role="button"] { cursor: none; }
+.has-cursor input, .has-cursor textarea, .has-cursor iframe { cursor: auto; }
+.has-cursor .mirror__canvas { cursor: none; }
+
+/* 3 Schnittkante zwischen Abschnitten */
+.has-cut { position: relative; }
+.cut { position: absolute; left: 0; right: 0; top: 0; height: 12vh; z-index: 2; pointer-events: none; overflow-x: clip; }
+.cut__band { position: absolute; inset: 0; transform-origin: top center; will-change: transform; }
+.cut__edge { position: absolute; left: 0; right: 0; top: 100%; height: 0; will-change: transform; }
+.cut__edge { transform: translateY(0); }
+.cut__line { position: absolute; left: 0; right: 0; top: -.5px; height: 1px; background: rgba(26,26,26,.5); transform: scaleX(0); transform-origin: left center; }
+.cut--from-dark .cut__line { background: rgba(10,10,10,.6); }
+.cut__sc { position: absolute; left: -20px; top: -12px; width: 40px; height: 24px; color: #1A1A1A; }
+.cut__sc svg { width: 40px; height: 24px; display: block; }
+.bg-paper > .cut .cut__sc, .game-sec > .cut .cut__sc { color: #1A1A1A; }
+.bg-night > .cut .cut__sc { color: #F5F5F5; }
+.bg-night > .cut .cut__line { background: rgba(245,245,245,.45); }
+/* Edge: die Linie sitzt an der Unterkante des Bandes und wandert mit ihm nach oben */
+.cut__edge { top: 0; height: 100%; }
+.cut__edge .cut__line, .cut__edge .cut__sc { top: auto; bottom: 0; }
+.cut__edge .cut__sc { bottom: -12px; }
+.cut__edge .cut__line { bottom: -.5px; }
+
+/* 4 Burak als Linienfigur */
+.fig { display: block; width: 100%; height: 100%; overflow: visible; }
+.fig__beard { fill: currentColor; stroke: none; }
+.companion { position: fixed; left: max(10px, calc((100vw - 1440px) / 2 + 10px)); bottom: 26px; z-index: 30; width: 34px; color: #fff; mix-blend-mode: difference; pointer-events: none; opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .6s cubic-bezier(.2,.8,.2,1); }
+.companion.is-ready { opacity: 1; transform: none; }
+.companion.is-away, .companion.is-foot { opacity: 0; transform: translateX(-24px); }
+.companion__figs { position: relative; display: block; width: 34px; height: 57px; }
+.companion__fig { position: absolute; inset: 0; opacity: 0; transform: translateY(4px); transition: opacity .35s ease, transform .45s cubic-bezier(.2,.8,.2,1); }
+.companion__fig.is-on { opacity: 1; transform: none; }
+.companion__say { position: absolute; left: 50%; bottom: 70px; writing-mode: vertical-rl; transform: translateX(-50%) rotate(180deg) translateY(-8px); font-size: .6875rem; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity .35s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
+.companion__say.is-on { opacity: .9; transform: translateX(-50%) rotate(180deg); }
+.has-cursor .companion { cursor: none; }
+
+.burak-inline { display: flex; align-items: flex-end; gap: .9rem; margin-bottom: 1.75rem; color: var(--ink); }
+.burak-inline .fig { width: 42px; height: 70px; flex: none; }
+.burak-inline__say { font-size: .75rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--iron); padding-bottom: .35rem; }
+.motion .burak-inline .fig { opacity: 0; transform: translateX(-36px); transition: opacity .6s ease, transform .9s cubic-bezier(.2,.8,.2,1); }
+.motion .burak-inline__say { opacity: 0; transform: translateY(6px); transition: opacity .5s ease .45s, transform .6s cubic-bezier(.2,.8,.2,1) .45s; }
+.motion .burak-inline.is-in .fig, .motion .burak-inline.is-in .burak-inline__say { opacity: 1; transform: none; }
+
+/* 5 „Wohnzimmer“ */
+.wz { position: relative; overflow: hidden; padding-block: clamp(4rem, 9vw, 7rem) clamp(3rem, 6vw, 5rem); }
+@media (min-width: 1024px) { .wz { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; } }
+.wz__stage { padding-inline: clamp(.5rem, 1.4vw, 1.25rem); }
+.wz__svg { display: block; width: 100%; height: auto; overflow: visible; transform-origin: 50% 55%; will-change: transform; }
+.wz__text { font-family: Inter, system-ui, sans-serif; font-size: 178px; font-weight: 900; letter-spacing: -0.02em; font-variation-settings: "opsz" 32; }
+.wz__svg--m { display: none; }
+.wz__text--m { font-size: 200px; }
+.wz__text--big { font-size: 250px; }
+@media (max-width: 767px) { .wz__svg:not(.wz__svg--m) { display: none; } .wz__svg--m { display: block; } }
+.wz__foot { display: flex; justify-content: space-between; gap: 1.5rem; margin-top: clamp(1.25rem, 3vw, 2.25rem); font-size: .75rem; letter-spacing: .2em; text-transform: uppercase; color: var(--ash); }
+.wz__foot p { margin: 0; }
+@media (max-width: 639px) { .wz__foot { flex-direction: column; gap: .4rem; } }
+
+/* Impressum/Datenschutz: Seite öffnet sich mit einem Schnitt */
+.page-cut { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
+.page-cut__band { position: absolute; left: 0; right: 0; height: 50%; background: #0A0A0A; animation: brk-up .62s cubic-bezier(.76,0,.24,1) .42s both; }
+.page-cut__band--top { top: 0; }
+.page-cut__band--bot { bottom: 0; animation-name: brk-down; }
+.page-cut__line { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: #F5F5F5; transform-origin: left center; animation: brk-line .42s cubic-bezier(.6,0,.3,1) both, brk-fade .2s ease .5s both; }
+.page-cut__sc { position: absolute; left: 0; top: calc(50% - 12px); width: 40px; height: 24px; color: #F5F5F5; animation: brk-sc .42s cubic-bezier(.6,0,.3,1) both, brk-fade .2s ease .45s both; }
+.page-cut__sc svg { width: 40px; height: 24px; display: block; }
+@keyframes brk-up { to { transform: translateY(-101%); } }
+@keyframes brk-down { to { transform: translateY(101%); } }
+@keyframes brk-line { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes brk-sc { from { transform: translateX(-48px); } to { transform: translateX(calc(100vw + 8px)); } }
+@keyframes brk-fade { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .page-cut, .intro, .cut, .companion, .cursor { display: none !important; }
+  .motion .burak-inline .fig, .motion .burak-inline__say { opacity: 1; transform: none; }
+}
