@@ -60,25 +60,88 @@ assets/media/            Hero-Video Desktop/Mobil + Poster
 
 **Kunden:** Registrieren und Anmelden, buchen (freie Zeiten nach Öffnungszeiten, Arbeitszeiten, Dauer, Vorlauf 60 Min., bestehenden Terminen und Blockern), stornieren und verschieben bis 12 Std. vorher, Kalenderdatei (.ics), nach dem Termin bewerten (eine Bewertung pro Termin, erscheint erst nach Freigabe), Profil ändern, Konto löschen.
 
-**Admin (Burak):** Tages- und Wochenkalender je Mitarbeiter, Kennzahlen (Termine, Auslastung, Umsatz, Online-Anteil, offene Bewertungen), Termine manuell anlegen und per Ziehen oder Dialog verschieben (Konflikte werden abgelehnt), stornieren, Blocker (ganztägig, wiederholend, mit Grund), Team mit Arbeitszeiten und Leistungen, Leistungen und Preise (fest, ab, von–bis), Bewertungen freigeben oder ablehnen, Einstellungen (Öffnungszeiten, Raster, Vorlauf, Horizont, Stornofrist, Schließtage).
+**Studio-Pult `/admin/`** (Desktop zuerst, auch auf Tablet und Handy nutzbar). Alle Beispieldaten sind mit „Beispiel“ markiert.
+
+| Bereich | Inhalt |
+|---|---|
+| Übersicht | Umsatz heute, gestern, Monat, Jahr mit Vorjahresvergleich, Termine, Auslastung, Ø Bon, Trinkgeld, offene Raten, Lagerwarnungen, 12-Monats-Diagramm, Top-Leistungen und -Produkte, Auslastung nach Wochentag und Stunde |
+| Kalender | Tag und Woche je Mitarbeiter oder je Platz (Stühle, Farb- und Waschplatz), Online-Buchungen sofort sichtbar, Pausen, Abwesenheiten, Blocker, Ziehen zum Verschieben, aus dem Termin kassieren, Anzahlung, No-Show |
+| Kasse | Termin oder frei kassieren, Leistungen, Produkte, Gutscheine, Beauty-Pakete, Ausfallgebühr, Raten, Anzahlungen; Rabatt je Position oder auf den Bon; Bar, Karte, Gutschein, Anzahlung, Ratenzahlung, gemischt; Trinkgeld je Mitarbeiter bar oder Karte; Rückgeld; Bon mit Pflichtangaben, Druck, E-Mail/SMS vorbereitet |
+| Transaktionen | alle Bons mit Filter, Storno nur als Gegenbon (Admin, mit Grund) |
+| Kundenkartei | Historie, Käufe, Produkte, Guthaben (Gutscheine, Pakete, Raten), Vorlieben, Notizen, Einwilligungen |
+| Gutscheine | verkaufen, Code prüfen, Restwert, Ablauf; Onlineverkauf vorbereitet |
+| Team | Mitarbeiter, Anwesenheit (Stempeln), Abwesenheiten und Pausen, Umsatz und Leistung, Trinkgeld |
+| Leistungen, Produkte & Lager, Beauty-Pakete | Preise, Dauer, Kategorien, MwSt., Einkaufspreis, Bestand, Mindestmenge mit Warnung, Wareneingang/-ausgang, Inventur, Inventurwert |
+| Buchhaltung | Kennzahlen, weitere Kennzahlen, Umsatz, Mitarbeiter, Dienstleistungen, Produkte (Marge), MwSt., Zahlungsmethoden, Bargeldverwaltung (Kassenbuch, Zählprotokoll, Bank, Einlage, Entnahme, Trinkgeld-Auszahlung), Gutscheine, Beauty-Pakete, Trinkgeld, Monatsabschluss |
+| Zahlungen | offene Raten, Zahlungsarten, Onlinezahlung (Stripe vorbereitet, inaktiv) |
+| Statistiken | eigene Auswertungen (Kennzahl, Gruppierung, Aufteilung, Zeitraum, Tabelle oder Diagramm) speichern |
+| Einstellungen | Öffnungszeiten, Firma und Steuernummer für den Bon, DATEV-Berater/Mandant, SKR03/04, Kontenzuordnung, Auto-Logout, Audit-Log |
+
+Jede Tabelle: Zeitraumfilter, inkl./exkl. MwSt., CSV-Export (Excel, Semikolon, UTF-8 mit BOM), Drucken.
+
+**Monatsabschluss (ein Klick):** ZIP mit `EXTF_Buchungsstapel_JJJJMM_SKR03.csv` (DATEV-Format Buchungsstapel, EXTF 700, Formatversion 13, Windows-1252, Berater- und Mandantennummer aus den Einstellungen; Erlöse 19 %/7 %, Kasse, Geldtransit für Karte, Gutscheine als erhaltene Anzahlung, Trinkgeld als durchlaufender Posten ohne Steuer), `Transaktionen_JJJJMM.csv`, `Monatsbericht_JJJJMM.html` (druckbar) und `LIESMICH.txt`. Danach den Monat sperren: Bons, Kassenbuch und Lager dieses Monats sind dann nicht mehr änderbar, Korrekturen laufen als Gegenbuchung im laufenden Monat. Kontenzuordnung bitte mit dem Steuerberater abstimmen.
 
 **Demo-Zugänge** (stehen auch auf den Login-Seiten):
 
 | Rolle | E-Mail | Passwort |
 |---|---|---|
 | Admin (Burak) | burak@brk-studio.demo | Burak#Demo2026 |
+| Mitarbeiter (Angelo) | angelo@brk-studio.demo | Angelo#Demo2026 |
 | Kunde | kunde@brk-studio.demo | Kunde#Demo2026 |
 
-Passwörter werden mit PBKDF2-SHA256 (120.000 Iterationen, WebCrypto) gehasht, nach 5 Fehlversuchen 30 s Sperre, Sitzung 8 Std. „Demo zurücksetzen“ in der Leiste lädt die Beispieldaten neu.
+Mitarbeiter sehen Kalender, Kasse, Kunden, Gutscheine und Team; Buchhaltung, Storno, Monatsabschluss, Preise und Einstellungen sind dem Admin vorbehalten. „Demo zurücksetzen“ in der Leiste lädt die Beispieldaten neu.
 
-**Architektur:** `assets/js/app/core.js` enthält die reine Terminlogik (freie Zeiten, Konflikte, Bewertungsschnitt), `api.js` die Fachfunktionen, darunter ein Adapter: `adapters/local.js` (aktiv, localStorage) oder `adapters/supabase.js` (vorbereitet). Umschalten in `assets/js/app/config.js`.
+**Architektur:** `core.js` (Terminlogik), `ledger.js` (Beträge in Cent, USt. je Satz, Gutschein-, Paket- und Ratenstand, Kassenbuch, DATEV), `zip.js` (ZIP ohne Bibliothek), `validate.js` (zentrale Eingabeprüfung), `api.js` und `pult-api.js` (Fachfunktionen), darunter ein Adapter: `adapters/local.js` (aktiv, localStorage) oder `adapters/supabase.js` (vorbereitet). Oberfläche des Pults in `assets/js/app/pult/`.
+
+## Sicherheit – ehrlich
+
+**Die Demo ist nicht sicher und soll es auch nicht sein.** Alle Daten liegen im Browser der Besucherin. Wer die Entwicklerwerkzeuge öffnet, kann sie lesen und ändern, auch Rollen und Bons. Rollen, Sperren und Prüfungen im Browser zeigen nur, wie es funktionieren wird. Echte Daten gehören erst in das System, wenn Supabase aktiv ist.
+
+**Was die Demo im Browser tut**
+- Passwörter nur als PBKDF2-SHA256-Hash (WebCrypto, 120.000 Iterationen, Salz je Konto), nie im Klartext.
+- Passwortregeln: mindestens 10 Zeichen, Buchstaben und Ziffern, keine Allerweltspasswörter, nicht die E-Mail.
+- Login-Bremse: nach 5 Fehlversuchen 30 s Sperre, ab 10 Fehlversuchen 5 Minuten, auch nach Neuladen.
+- Sitzungen: Kunden 8 Std., Team 4 Std.; im Pult automatische Abmeldung nach Inaktivität (Standard 20 Min., Warnung 1 Min. vorher).
+- Rollen Kunde, Mitarbeiter, Admin; jede Funktion prüft die Rolle.
+- Bons, Kassenbuch, Lagerbewegungen, Abschlüsse und Audit-Log sind nur anhängbar, die Monatssperre gilt für alle Buchungen, Storno nur als Gegenbon. Das ahmt die Datenbank-Trigger nach.
+- Kein `innerHTML` mit ungeprüften Daten: Nutzerdaten werden escaped oder per `textContent` gesetzt (Test `tools/qa-xss.js`: HTML in 20 Feldern, 41 Ansichten, kein Element entsteht).
+- Zentrale Eingabeprüfung und Normalisierung (`validate.js`: Länge, Format, Unicode-NFC, Steuer- und Bidi-Zeichen entfernt).
+- Content-Security-Policy per Meta-Tag auf jeder Seite: nur eigene Skripte, keine Inline-Skripte, kein `eval`, keine Plugins, `base-uri` und `form-action` auf die eigene Seite; Referrer-Policy `strict-origin-when-cross-origin`; externe Links mit `rel="noopener noreferrer"`. Inline-Stilattribute bleiben für Kalender- und Diagrammpositionen erlaubt.
+- Exporte gegen CSV- und Formel-Injection geschützt (Zellen mit `= + - @` bekommen ein `'`, im DATEV-Text werden sie entfernt).
+
+**Was erst mit Supabase wirklich geschützt ist** (`supabase/schema.sql`)
+- Supabase Auth (bcrypt, JWT); Rollen in `profiles.role`; neue Konten sind immer Kunde, Rechte vergibt nur ein Admin (Trigger gegen Selbstbeförderung).
+- Row Level Security auf jeder Tabelle, ohne passende Policy kein Zugriff; Kunden sehen nur eigene Termine, Karteikarte, Pakete und Raten; Mitarbeiter keine Buchhaltungs-Einstellungen und kein Audit-Log.
+- Kassieren, Storno und Monatsabschluss nur über geprüfte Datenbankfunktionen (`create_bon`, `void_bon`, `close_month`). Der Server rechnet Summen und Steuern selbst, vergibt die Bonnummer fortlaufend, datiert nicht zurück, prüft Bestand, Gutschein-Restwert, Anzahlung und Raten.
+- Trigger: nur anhängbar (auch für den Datenbank-Eigentümer), Monatssperre, Bestand nur über Lagerbewegungen, Kasse nie negativ, Einlage und Entnahme nur Admin, Stempeln nur für sich selbst.
+- Audit-Log schreiben nur Trigger und Funktionen; Clients können es nicht schreiben, ändern oder löschen.
+- Im Frontend steht nur der öffentliche anon key, nie der service_role key.
+- CSRF: Die App nutzt keine Auth-Cookies. Jede Anfrage trägt das JWT im `Authorization`-Header, das eine fremde Seite nicht mitsenden kann. Ein CSRF-Token ist deshalb nicht nötig. Das gilt, solange keine Cookie-Sitzungen eingeführt werden.
+- Getestet gegen lokales PostgreSQL mit Auth-Nachbildung: `tools/run-schema-test.sh`, 38 Prüfungen (Rechte, Summenprüfung, Bestand, Gutschein, Storno, Sperre, Audit).
+
+**Grenzen und offene Punkte**
+- Keine TSE: Die Kasse ist **kein** zulässiges Kassensystem nach KassenSichV. Für echten Kassenbetrieb braucht es eine zertifizierte TSE (z. B. Cloud-TSE) und die Meldung beim Finanzamt.
+- GitHub Pages kann keine HTTP-Header setzen. `frame-ancestors` (Schutz vor Einbetten), HSTS und `Permissions-Policy` gehen nur mit eigenem Hosting oder einem Proxy (z. B. Cloudflare).
+- Die Sitzung liegt im localStorage. Gegen Skript-Einschleusung schützen CSP und Escaping. Mit Supabase kurze JWT-Laufzeit wählen.
+- In Supabase einstellen: Passwortregeln und Leaked-Password-Schutz, Rate Limits und CAPTCHA, E-Mail-Bestätigung, MFA für Admin und Team, Session-Timeout.
+- DATEV-Export, Kontenzuordnung, Gutschein- und Trinkgeldbehandlung bitte mit dem Steuerberater abstimmen.
 
 **Echtbetrieb mit Supabase:**
-1. Projekt anlegen, `supabase/schema.sql` im SQL-Editor ausführen (Tabellen, Row Level Security, `is_admin()`, RPCs `busy_slots`, `book_appointment` mit Konfliktprüfung und Ausschlussbedingung gegen Doppelbuchungen, `delete_own_account`).
-2. Burak registrieren und in `profiles` die Rolle `admin` setzen.
+1. Projekt anlegen, `supabase/schema.sql` im SQL-Editor ausführen.
+2. Burak und das Team registrieren; im SQL-Editor Rollen setzen (Anleitung am Ende der Datei).
 3. In `config.js` `adapter: 'supabase'`, URL und anon key eintragen, `demo: false`.
 
-**Fehlt für den Echtbetrieb:** aktiviertes Backend mit serverseitiger Prüfung (die Demo prüft nur im Browser), geräteübergreifende Daten, E-Mail/SMS-Bestätigungen und Erinnerungen, Passwort-zurücksetzen, rechtssichere Datenschutzerklärung und AGB/Stornobedingungen, optional Anzahlung/Zahlung, Bildrechte.
+**Fehlt für den Echtbetrieb:** aktivierte Supabase-Datenbank, TSE, Stripe-Anbindung (Edge Function, Webhook), E-Mail/SMS-Versand, Passwort zurücksetzen, Datenübernahme, rechtssichere Datenschutzerklärung und AGB/Stornobedingungen, Abstimmung mit dem Steuerberater, Bildrechte.
+
+## Tests
+
+```bash
+node tools/qa-platform.js   # Buchung, Konto, Admin-Kalender, Blocker, Bewertungen
+node tools/qa-pult.js       # Kasse, Trinkgeld -> Buchhaltung/Kassenbuch, Lager, Gutschein, Storno, ZIP/DATEV, Sperre, Rollen
+node tools/qa-xss.js        # HTML-Nutzlasten in Daten -> kein Element in 41 Ansichten
+node tools/qa-csp.js        # keine CSP-Verstöße auf allen Seiten
+tools/run-schema-test.sh    # Supabase-Schema gegen lokales PostgreSQL
+```
 
 ## Entwicklung
 
