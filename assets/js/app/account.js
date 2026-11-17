@@ -10,7 +10,7 @@ let user, cat;
 async function init() {
   user = await initChrome();
   cat = await api.catalog();
-  if (user && user.role === 'admin') { location.replace('../admin/'); return; }
+  if (user && user.role !== 'customer') { location.replace('../admin/'); return; }
   user ? showApp() : showAuth();
 }
 

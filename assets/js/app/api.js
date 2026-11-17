@@ -6,7 +6,7 @@ import { slotsFor, checkSlot, ratingSummary } from './core.js';
 import { nowCologne, addDays, cmpDateTime, validEmail, validPhone, passwordProblem } from './util.js';
 
 let db;
-async function adapter() {
+export async function adapter() {
   if (db) return db;
   if (CONFIG.adapter === 'supabase') {
     const { createSupabaseAdapter } = await import('./adapters/supabase.js');
@@ -17,12 +17,14 @@ async function adapter() {
 const sortBy = (k) => (a, b) => (a[k] ?? 0) - (b[k] ?? 0);
 const byDateTime = (a, b) => cmpDateTime(a.date, a.start, b.date, b.start);
 
-async function requireUser(role) {
+/** role: 'admin' | 'customer' | ['admin', 'staff'] – im Livebetrieb erzwingt RLS dasselbe serverseitig. */
+export async function requireUser(role) {
   const u = await (await adapter()).getUser();
   if (!u) throw new Error('Bitte melde dich an.');
-  if (role && u.role !== role) throw new Error('Keine Berechtigung.');
+  if (role && !(Array.isArray(role) ? role.includes(u.role) : u.role === role)) throw new Error('Keine Berechtigung.');
   return u;
 }
+const TEAM = ['admin', 'staff'];
 
 export const api = {
   get demo() { return CONFIG.adapter === 'local'; },
@@ -68,13 +70,13 @@ export const api = {
     if (!name || name.trim().length < 2) errors.name = 'Bitte gib deinen Namen an.';
     if (!validEmail(email)) errors.email = 'Bitte gib eine gültige E-Mail an.';
     if (!validPhone(phone)) errors.phone = 'Bitte gib eine Telefonnummer an, z. B. 0171 2345678.';
-    const pw = passwordProblem(password || ''); if (pw) errors.password = pw;
+    const pw = passwordProblem(password || '', email || ''); if (pw) errors.password = pw;
     if (Object.keys(errors).length) { const e = new Error('Bitte prüfe deine Angaben.'); e.fields = errors; throw e; }
     return (await adapter()).signUp({ name, email, phone, password });
   },
   async login(email, password) { return (await adapter()).signIn(email, password); },
   async logout() { return (await adapter()).signOut(); },
-  async updateProfile(patch) { const u = await requireUser(); if (patch.password) { const p = passwordProblem(patch.password); if (p) throw new Error(p); } return (await adapter()).updateProfile(u.id, patch); },
+  async updateProfile(patch) { const u = await requireUser(); if (patch.password) { const p = passwordProblem(patch.password, u.email); if (p) throw new Error(p); } return (await adapter()).updateProfile(u.id, patch); },
   async deleteAccount() { const u = await requireUser('customer'); await (await adapter()).deleteUser(u.id); await this.logout(); },
 
   /* ---------- Buchen (Kunde) ---------- */
@@ -152,16 +154,16 @@ export const api = {
 
   /* ---------- Admin ---------- */
   admin: {
-    async guard() { return requireUser('admin'); },
+    async guard() { return requireUser(TEAM); },
     async data(from, to) {
-      await requireUser('admin');
+      await requireUser(TEAM);
       const d = await adapter();
       const [appointments, blockers, reviews, users] = await Promise.all([d.list('appointments'), d.list('blockers'), d.list('reviews'), d.list('users')]);
       const inRange = (x) => (!from || x.date >= from) && (!to || x.date <= to);
       return { appointments: appointments.filter(inRange).sort(byDateTime), blockers: blockers.filter(inRange), reviews: reviews.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)), customers: users.filter((u) => u.role === 'customer') };
     },
     async createAppointment({ serviceId, staffId, date, start, name, phone, note, force }) {
-      await requireUser('admin');
+      await requireUser(TEAM);
       const d = await adapter();
       const { staff, services, settings } = await api.catalog();
       const service = services.find((s) => s.id === serviceId), st = staff.find((s) => s.id === staffId);
@@ -171,7 +173,7 @@ export const api = {
       return d.insert('appointments', { date, start, duration: service.duration, serviceId, staffId, customerId: null, name: name.trim(), phone: (phone || '').trim(), note: note || '', status: 'booked', source: 'admin', history: [{ at: new Date().toISOString(), by: 'admin', what: 'angelegt' }] });
     },
     async moveAppointment(id, { date, start, staffId }) {
-      await requireUser('admin');
+      await requireUser(TEAM);
       const d = await adapter();
       const a = await d.get('appointments', id);
       const { staff, services, settings } = await api.catalog();
@@ -181,18 +183,18 @@ export const api = {
       return d.update('appointments', id, { date, start, staffId: st.id, history: [...(a.history || []), { at: new Date().toISOString(), by: 'admin', what: `verschoben von ${a.date} ${a.start}` }] });
     },
     async cancelAppointment(id) {
-      await requireUser('admin');
+      await requireUser(TEAM);
       const d = await adapter(); const a = await d.get('appointments', id);
       return d.update('appointments', id, { status: 'cancelled', history: [...(a.history || []), { at: new Date().toISOString(), by: 'admin', what: 'storniert' }] });
     },
     async saveBlocker(b) {
-      await requireUser('admin');
+      await requireUser(TEAM);
       const d = await adapter();
       if (!(b.end > b.start)) throw new Error('Das Ende muss nach dem Beginn liegen.');
       if (b.id) return d.update('blockers', b.id, b);
       return d.insert('blockers', b);
     },
-    async removeBlocker(id) { await requireUser('admin'); return (await adapter()).remove('blockers', id); },
+    async removeBlocker(id) { await requireUser(TEAM); return (await adapter()).remove('blockers', id); },
     async saveStaff(s) { await requireUser('admin'); const d = await adapter(); if (!s.name || !s.name.trim()) throw new Error('Name fehlt.'); return s.id ? d.update('staff', s.id, s) : d.insert('staff', { active: true, hours: {}, order: 99, ...s }); },
     async removeStaff(id) {
       await requireUser('admin'); const d = await adapter();

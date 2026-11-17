@@ -29,7 +29,11 @@ export function authFormsHTML({ idp = 'a', admin = false } = {}) {
     <p class="demo-creds__title"><span class="demo-flag__dot" aria-hidden="true"></span>Demo-Zugang ${admin ? 'Studio-Pult' : 'Kunde'}</p>
     <p class="demo-creds__row"><span>E-Mail</span><code>${esc(demo.email)}</code></p>
     <p class="demo-creds__row"><span>Passwort</span><code>${esc(demo.password)}</code></p>
-    <button type="button" class="link-quiet link-quiet--dark" data-fill-demo>Demo-Daten einsetzen</button>
+    <button type="button" class="link-quiet link-quiet--dark" data-fill-demo>Demo-Daten einsetzen</button>${admin ? `
+    <p class="demo-creds__title demo-creds__title--sub">Mitarbeiter (eingeschränkt)</p>
+    <p class="demo-creds__row"><span>E-Mail</span><code>${esc(DEMO_ACCOUNTS.staff.email)}</code></p>
+    <p class="demo-creds__row"><span>Passwort</span><code>${esc(DEMO_ACCOUNTS.staff.password)}</code></p>
+    <button type="button" class="link-quiet link-quiet--dark" data-fill-demo="staff">Mitarbeiter-Zugang einsetzen</button>` : ''}
   </aside>`;
 }
 
@@ -45,21 +49,23 @@ export function bindAuthForms(root, { onAuth, admin = false }) {
     t.addEventListener('click', () => show(t.dataset.tab));
     t.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { const n = tabs[(tabs.indexOf(t) + 1) % tabs.length]; n.focus(); show(n.dataset.tab, false); } });
   });
-  $('[data-fill-demo]', root).addEventListener('click', () => {
+  $$('[data-fill-demo]', root).forEach((b) => b.addEventListener('click', () => {
     show('in', false);
     const f = $('[data-form="in"]', root);
-    f.email.value = demo.email; f.password.value = demo.password;
+    const acc = b.dataset.fillDemo === 'staff' ? DEMO_ACCOUNTS.staff : demo;
+    f.email.value = acc.email; f.password.value = acc.password;
     f.querySelector('button[type="submit"]').focus();
-  });
+  }));
   const busy = (form, on) => { const b = form.querySelector('button[type="submit"]'); b.disabled = on; b.classList.toggle('is-busy', on); };
   $('[data-form="in"]', root).addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = e.currentTarget; const err = $('[data-error]', f); err.textContent = '';
     if (!f.email.value || !f.password.value) { err.textContent = 'Bitte E-Mail und Passwort eingeben.'; return; }
+    if (f.email.value.length > 120 || f.password.value.length > 200) { err.textContent = 'Eingabe zu lang.'; return; }
     busy(f, true);
     try {
       const u = await api.login(f.email.value, f.password.value);
-      if (admin && u.role !== 'admin') { await api.logout(); throw new Error('Dieses Konto hat keinen Zugang zum Studio-Pult.'); }
+      if (admin && !['admin', 'staff'].includes(u.role)) { await api.logout(); throw new Error('Dieses Konto hat keinen Zugang zum Studio-Pult.'); }
       onAuth(u);
     } catch (x) { err.textContent = x.message; f.password.select(); } finally { busy(f, false); }
   });
