@@ -180,9 +180,14 @@
   /* ---------- Headline in Zeichen zerlegen (Masken-Reveal) ---------- */
   const title = $('[data-split]');
   if (title && motion) {
-    const text = title.textContent.trim();
-    title.setAttribute('aria-label', text);
-    title.innerHTML = text.split(' ').map((w) => `<span class="line" aria-hidden="true">${w.split('').map((c) => `<span class="char">${c.replace(/[&<>]/g, (x) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[x]))}</span>`).join('')}</span>`).join('');
+    // Zeilen stehen fest im HTML (kein Layout-Sprung); hier nur Zeichen für den Masken-Reveal erzeugen
+    title.setAttribute('aria-label', title.textContent.replace(/\s+/g, ' ').trim());
+    $$('.line', title).forEach((line) => {
+      const chars = [...line.textContent];
+      line.textContent = '';
+      line.setAttribute('aria-hidden', 'true');
+      for (const c of chars) { const s = document.createElement('span'); s.className = 'char'; s.textContent = c; line.append(s); }
+    });
   }
   if (title) title.classList.add('is-split');
 
