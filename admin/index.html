@@ -2,6 +2,8 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-src https://www.google.com; worker-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Studio-Pult – BRK Studio Köln</title>
   <meta name="description" content="Interner Bereich von BRK Studio.">
@@ -24,12 +26,12 @@
     <section class="auth auth--dark" data-adm-auth hidden aria-labelledby="adm-auth-title">
       <figure class="auth__visual">
         <img src="../assets/img/real-stuhl-1000.webp" srcset="../assets/img/real-stuhl-600.webp 600w, ../assets/img/real-stuhl-1000.webp 1000w" sizes="(min-width: 1024px) 50vw, 100vw" width="1000" height="1250" alt="Barberstuhl im BRK Studio" decoding="async">
-        <figcaption class="auth__quote">Studio-Pult<span>Kalender, Team und Bewertungen an einem Ort</span></figcaption>
+        <figcaption class="auth__quote">Studio-Pult<span>Kalender, Kasse, Kunden und Buchhaltung an einem Ort</span></figcaption>
       </figure>
       <div class="auth__panel">
         <p class="eyebrow eyebrow--light">Nur für das Team</p>
         <h1 id="adm-auth-title" class="auth__title">Studio-Pult</h1>
-        <p class="auth__lede">Anmelden mit dem Inhaber-Zugang.</p>
+        <p class="auth__lede">Anmelden mit dem Inhaber- oder Mitarbeiter-Zugang.</p>
         <div data-auth-forms></div>
       </div>
     </section>
@@ -37,12 +39,26 @@
     <div class="pult" data-pult hidden>
       <aside class="pult__side" aria-label="Studio-Pult Navigation">
         <a href="../" class="pult__brand"><img src="../assets/img/logo-light.svg" width="200" height="104" alt="BRK Studio – zur Website"></a>
-        <nav class="pult__nav">
+        <nav class="pult__nav" aria-label="Bereiche">
+          <p class="pult__grp">Heute</p>
+          <button type="button" data-nav="uebersicht" data-role="admin">Übersicht</button>
           <button type="button" data-nav="kalender" aria-current="page">Kalender</button>
-          <button type="button" data-nav="bewertungen">Bewertungen <span class="count" data-count-pending hidden></span></button>
+          <button type="button" data-nav="kasse">Kasse</button>
+          <button type="button" data-nav="belege">Transaktionen</button>
+          <p class="pult__grp">Kunden</p>
+          <button type="button" data-nav="kunden">Kundenkartei</button>
+          <button type="button" data-nav="gutscheine">Gutscheine</button>
+          <button type="button" data-nav="bewertungen" data-role="admin">Bewertungen <span class="count" data-count-pending hidden></span></button>
+          <p class="pult__grp">Studio</p>
           <button type="button" data-nav="team">Team</button>
-          <button type="button" data-nav="leistungen">Leistungen</button>
-          <button type="button" data-nav="einstellungen">Einstellungen</button>
+          <button type="button" data-nav="leistungen" data-role="admin">Leistungen</button>
+          <button type="button" data-nav="produkte" data-role="admin">Produkte &amp; Lager <span class="count count--warn" data-count-stock hidden></span></button>
+          <button type="button" data-nav="pakete" data-role="admin">Beauty-Pakete</button>
+          <p class="pult__grp" data-role="admin">Finanzen</p>
+          <button type="button" data-nav="buchhaltung" data-role="admin">Buchhaltung</button>
+          <button type="button" data-nav="zahlungen" data-role="admin">Zahlungen</button>
+          <button type="button" data-nav="statistiken" data-role="admin">Statistiken</button>
+          <button type="button" data-nav="einstellungen" data-role="admin">Einstellungen</button>
         </nav>
         <div class="pult__me"><p data-me></p><button type="button" class="pult__logout" data-logout>Abmelden</button></div>
       </aside>
@@ -58,6 +74,7 @@
             </div>
             <div class="cal-bar__tools">
               <div class="seg" role="group" aria-label="Ansicht"><button type="button" data-view="day" aria-pressed="true">Tag</button><button type="button" data-view="week" aria-pressed="false">Woche</button></div>
+              <div class="seg" role="group" aria-label="Spalten"><button type="button" data-mode="staff" aria-pressed="true">Team</button><button type="button" data-mode="res" aria-pressed="false">Plätze</button></div>
               <label class="sr-only" for="cal-staff">Mitarbeiter</label>
               <select class="select select--box" id="cal-staff" data-cal-staff></select>
               <button type="button" class="btn btn-outline btn-sm" data-new-block>Blocker</button>
@@ -70,29 +87,51 @@
         </div>
 
         <div data-panel="bewertungen" hidden>
-          <header class="panel-head"><h1 class="panel-title">Bewertungen</h1>
+          <header class="panel-head"><h1 class="panel-title" tabindex="-1">Bewertungen</h1>
             <div class="seg" role="group" aria-label="Filter"><button type="button" data-rf="pending" aria-pressed="true">Ausstehend</button><button type="button" data-rf="approved" aria-pressed="false">Freigegeben</button><button type="button" data-rf="rejected" aria-pressed="false">Abgelehnt</button></div>
           </header>
           <ul class="mod-list" data-reviews></ul>
         </div>
 
         <div data-panel="team" hidden>
-          <header class="panel-head"><h1 class="panel-title">Team</h1><button type="button" class="btn btn-dark btn-sm" data-add-staff>Mitarbeiter hinzufügen</button></header>
-          <ul class="tbl" data-staff-list></ul>
+          <header class="panel-head"><h1 class="panel-title" tabindex="-1">Team</h1><button type="button" class="btn btn-dark btn-sm" data-add-staff data-role="admin">Mitarbeiter hinzufügen</button></header>
+          <div class="tabs" role="tablist" aria-label="Team" data-team-tabs>
+            <button type="button" role="tab" data-tab="mitarbeiter" aria-selected="true">Mitarbeiter</button>
+            <button type="button" role="tab" data-tab="anwesenheit" aria-selected="false">Anwesenheit</button>
+            <button type="button" role="tab" data-tab="abwesenheit" aria-selected="false">Abwesenheiten &amp; Pausen</button>
+            <button type="button" role="tab" data-tab="leistung" aria-selected="false" data-role="admin">Umsatz &amp; Leistung</button>
+          </div>
+          <div data-team-pane="mitarbeiter"><ul class="tbl" data-staff-list></ul></div>
+          <div data-team-pane="anwesenheit" hidden></div>
+          <div data-team-pane="abwesenheit" hidden></div>
+          <div data-team-pane="leistung" hidden></div>
         </div>
 
         <div data-panel="leistungen" hidden>
-          <header class="panel-head"><h1 class="panel-title">Leistungen &amp; Preise</h1><button type="button" class="btn btn-dark btn-sm" data-add-service>Leistung hinzufügen</button></header>
+          <header class="panel-head"><h1 class="panel-title" tabindex="-1">Leistungen &amp; Preise</h1><button type="button" class="btn btn-dark btn-sm" data-add-service>Leistung hinzufügen</button></header>
           <div data-service-list></div>
         </div>
 
+        <div data-panel="uebersicht" hidden></div>
+        <div data-panel="kasse" hidden></div>
+        <div data-panel="belege" hidden></div>
+        <div data-panel="kunden" hidden></div>
+        <div data-panel="gutscheine" hidden></div>
+        <div data-panel="produkte" hidden></div>
+        <div data-panel="pakete" hidden></div>
+        <div data-panel="buchhaltung" hidden></div>
+        <div data-panel="zahlungen" hidden></div>
+        <div data-panel="statistiken" hidden></div>
+
         <div data-panel="einstellungen" hidden>
-          <header class="panel-head"><h1 class="panel-title">Einstellungen</h1></header>
+          <header class="panel-head"><h1 class="panel-title" tabindex="-1">Einstellungen</h1></header>
           <form class="settings" data-settings novalidate><button class="btn btn-dark btn-sm" type="submit">Speichern</button></form>
+          <div data-biz-settings></div>
         </div>
       </section>
     </div>
   </main>
+  <div class="print-root" data-print-root aria-hidden="true"></div>
   <script type="module" src="../assets/js/app/admin.js"></script>
 </body>
 </html>
