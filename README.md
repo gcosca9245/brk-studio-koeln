@@ -1,14 +1,14 @@
 # BRK Studio Köln – One-Page-Website (Entwurf)
 
 Website für **BRK Studio**, Friseur & Barbershop in der Fleischmengergasse 29, direkt am Neumarkt in Köln.
-Hero mit Video, Leistungen & Preise, scrollbasierte Studio-Story, Team, Galerie, Terminbuchung (Demo) mit Planity-Link, Kontakt & Anfahrt.
+Hero mit Video, Leistungen & Preise, scrollbasierte Studio-Story, Team, Galerie, Mini-Spiel, eigene Buchungsplattform mit Kundenkonto, Bewertungen und Studio-Pult (Demo), Kontakt & Anfahrt.
 
 **Live:** https://gcosca9245.github.io/brk-studio-koeln/
 
 > **Wichtig vor dem Livegang**
 > - **Fotos vom Salon:** Die Bilder vom Innenraum, Empfang, der Ladenfront und das Porträt von Burak stammen aus den öffentlichen Profilen des Salons (Planity). Die **Nutzungsrechte müssen vor dem Livegang mit dem Inhaber geklärt werden.**
 > - **Platzhalter:** Das Teamfoto von Angelo und alle Galeriebilder sind **Stockfotos (Platzhalterbilder)** und zeigen weder das Team noch Arbeiten des Studios. Das Hero-Video ist ebenfalls Stockmaterial (Stimmungsbild, nicht der Salon).
-> - **Terminbuchung:** Das Formular ist eine Demo. Es sendet keine Daten, die freien Zeiten sind simuliert. Verbindlich gebucht wird über Planity.
+> - **Buchungsplattform:** Läuft als Demo komplett im Browser (localStorage). Termine, Konten und Bewertungen sind nur auf dem jeweiligen Gerät sichtbar. Für den Echtbetrieb muss das vorbereitete Supabase-Backend aktiviert werden (siehe unten). Einträge mit „Beispiel“ sind Beispieldaten.
 > - **Impressum und Datenschutz** sind Platzhalterseiten und müssen ergänzt werden.
 > - Das Logo ist ein **neuer Entwurf**. Am Laden hängt bereits ein anderes BRK-Studio-Logo; welche Marke verwendet wird, entscheidet der Inhaber.
 
@@ -25,7 +25,7 @@ Monochromes Editorial-Design: tiefes Schwarz und Off-White im Wechsel, Haarlinie
 - Galerie: ab 1024 px horizontal angeheftet, mobil natives Wischen mit Scroll-Snap
 - Buchung: 14 Tage, Sonntag geschlossen, Zeiten nach Öffnungszeiten und Dauer der Leistung, „Buchen“ bei jeder Leistung wählt sie vor, Validierung mit Fokus auf das erste Fehlerfeld
 - Karte als 2-Klick-Lösung (Google Maps lädt erst nach Klick)
-- Mini-Spiel „Einmal Burak sein“ (`#spiel`): eigene monochrome Canvas-Illustration (Burak als Silhouette ohne Gesicht, Gast im Barberstuhl, goldene Schere). Mit Maus oder Finger über die Haare fahren: rund 380 einzelne Strähnen werden gekürzt und fallen mit leichter Physik zu Boden. Stile Fade, Classic und Buzz, Fortschritt in Prozent, „Termin buchen“ wählt die passende Leistung vor. Pointer Events, `touch-action: none` nur auf dem Spielfeld, `data-lenis-prevent`, Schleife nur bei Sichtbarkeit (IntersectionObserver), devicePixelRatio bis 2. Tastatur: Spielfeld fokussieren und Leertaste (oder Button „Schneiden“), Fortschritt über `aria-live`; bei reduzierter Bewegung fallen die Strähnen ohne Physik direkt zu Boden
+- Mini-Spiel „Einmal Burak sein“ (`#spiel`): eigene monochrome Canvas-Illustration (Burak als Silhouette ohne Gesicht, Gast im Barberstuhl, goldene Schere). Rund 900 Strähnen wachsen aus der Kopfhaut und sind wie eine echte Frisur gekämmt: oben nach hinten, an der Seite schräg nach hinten unten, ab dem Hinterkopf fallen sie weich. Geschnitten wird nur bei gedrückter Maus oder aufgesetztem Finger: Jede Strähne wird exakt am Schnittpunkt mit dem Scherenweg gekürzt (Strecke gegen Strecke, mit zusammengefassten Pointer-Events auch bei schnellen Bewegungen lückenlos), das abgeschnittene Stück fällt als eigenes Teil zu Boden. Die Zielform (Fade, Classic, Buzz) liegt als gestrichelte Kontur über dem Kopf; der Fortschritt misst die Nähe zur Zielkontur, zu kurz kostet nur wenig. Am Ende macht Burak den Feinschliff. Mobil ist das Bild auf den Kopf gezoomt. Tastatur: Spielfeld fokussieren und Leertaste (oder Button „Schneiden“), Burak schneidet dann abschnittsweise exakt auf die Kontur; Fortschritt über `aria-live`; bei reduzierter Bewegung fallen die Strähnen ohne Physik.
 - Nur `transform` und `opacity` werden animiert; `prefers-reduced-motion`: kein Lenis, keine Parallaxe, Video startet nicht, alle Inhalte sofort sichtbar
 - Alle Schriften, Bilder und Videos liegen im Repository; ohne Klick auf die Karte werden keine Drittanbieter geladen
 
@@ -39,13 +39,44 @@ favicon.svg
 src/input.css            Quell-CSS (Tailwind + Komponenten, kommentiert)
 assets/css/styles.css    kompiliertes CSS
 assets/js/boot.js        setzt js/motion-Klassen im <head>
-assets/js/main.js        Scroll-Choreografie, Menü, Video, Buchung, Karte
+assets/js/main.js        Scroll-Choreografie, Menü, Video, Karte
+assets/js/app/           Buchungsplattform (ES-Module, siehe unten)
+buchen/                  Online-Buchung
+konto/                   Kundenkonto
+admin/                   Studio-Pult für Burak
+supabase/schema.sql      Datenbankschema mit RLS für den Echtbetrieb
 assets/js/game.js        Mini-Spiel „Einmal Burak sein“ (Canvas, ohne Bibliotheken)
 assets/vendor/           gsap.min.js, ScrollTrigger.min.js, lenis.min.js
 assets/fonts/            Inter (variabel, Gewicht + optische Größe)
 assets/img/              Logos (SVG), Fotos (WebP)
 assets/media/            Hero-Video Desktop/Mobil + Poster
 ```
+
+## Buchungsplattform (statt Planity)
+
+**Seiten:** `/buchen/` (Leistung, Mitarbeiter, Termin, Daten), `/konto/` (Termine, Bewertungen, Profil), `/admin/` (Studio-Pult). Auf der Startseite zeigt der Abschnitt „Termin“ echte freie Zeiten aus derselben Logik, „Bewertungen“ den Durchschnitt und die freigegebenen Stimmen.
+
+**Kunden:** Registrieren und Anmelden, buchen (freie Zeiten nach Öffnungszeiten, Arbeitszeiten, Dauer, Vorlauf 60 Min., bestehenden Terminen und Blockern), stornieren und verschieben bis 12 Std. vorher, Kalenderdatei (.ics), nach dem Termin bewerten (eine Bewertung pro Termin, erscheint erst nach Freigabe), Profil ändern, Konto löschen.
+
+**Admin (Burak):** Tages- und Wochenkalender je Mitarbeiter, Kennzahlen (Termine, Auslastung, Umsatz, Online-Anteil, offene Bewertungen), Termine manuell anlegen und per Ziehen oder Dialog verschieben (Konflikte werden abgelehnt), stornieren, Blocker (ganztägig, wiederholend, mit Grund), Team mit Arbeitszeiten und Leistungen, Leistungen und Preise (fest, ab, von–bis), Bewertungen freigeben oder ablehnen, Einstellungen (Öffnungszeiten, Raster, Vorlauf, Horizont, Stornofrist, Schließtage).
+
+**Demo-Zugänge** (stehen auch auf den Login-Seiten):
+
+| Rolle | E-Mail | Passwort |
+|---|---|---|
+| Admin (Burak) | burak@brk-studio.demo | Burak#Demo2026 |
+| Kunde | kunde@brk-studio.demo | Kunde#Demo2026 |
+
+Passwörter werden mit PBKDF2-SHA256 (120.000 Iterationen, WebCrypto) gehasht, nach 5 Fehlversuchen 30 s Sperre, Sitzung 8 Std. „Demo zurücksetzen“ in der Leiste lädt die Beispieldaten neu.
+
+**Architektur:** `assets/js/app/core.js` enthält die reine Terminlogik (freie Zeiten, Konflikte, Bewertungsschnitt), `api.js` die Fachfunktionen, darunter ein Adapter: `adapters/local.js` (aktiv, localStorage) oder `adapters/supabase.js` (vorbereitet). Umschalten in `assets/js/app/config.js`.
+
+**Echtbetrieb mit Supabase:**
+1. Projekt anlegen, `supabase/schema.sql` im SQL-Editor ausführen (Tabellen, Row Level Security, `is_admin()`, RPCs `busy_slots`, `book_appointment` mit Konfliktprüfung und Ausschlussbedingung gegen Doppelbuchungen, `delete_own_account`).
+2. Burak registrieren und in `profiles` die Rolle `admin` setzen.
+3. In `config.js` `adapter: 'supabase'`, URL und anon key eintragen, `demo: false`.
+
+**Fehlt für den Echtbetrieb:** aktiviertes Backend mit serverseitiger Prüfung (die Demo prüft nur im Browser), geräteübergreifende Daten, E-Mail/SMS-Bestätigungen und Erinnerungen, Passwort-zurücksetzen, rechtssichere Datenschutzerklärung und AGB/Stornobedingungen, optional Anzahlung/Zahlung, Bildrechte.
 
 ## Entwicklung
 

@@ -525,7 +525,7 @@
   /* ---------- Buchungsstrecke ---------- */
   .bk__grid { display: grid; gap: 2.5rem; padding-block: clamp(2.5rem, 6vw, 5rem) 8rem; }
   @media (min-width: 1024px) { .bk__grid { grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: clamp(2.5rem, 5vw, 5rem); align-items: start; padding-bottom: 6rem; } .bk__summary { position: sticky; top: 2rem; } }
-  .bk__flow { display: grid; }
+  .bk__flow { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
   .bk-step { border-top: 1px solid var(--line-light); padding-block: 2rem 2.5rem; }
   .bk-step__head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
   .bk-step__title { font-size: clamp(1.375rem, 2.2vw, 1.75rem); font-weight: 800; letter-spacing: -0.03em; display: inline-flex; align-items: center; gap: .75rem; }

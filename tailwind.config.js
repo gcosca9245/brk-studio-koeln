@@ -1,6 +1,6 @@
 /** Tailwind-Konfiguration – Farben, Schrift und Raster als Design-Tokens (BRK Studio) */
 module.exports = {
-  content: ['./index.html', './impressum.html', './datenschutz.html', './assets/js/**/*.js'],
+  content: ['./index.html', './impressum.html', './datenschutz.html', './buchen/*.html', './konto/*.html', './admin/*.html', './assets/js/**/*.js'],
   theme: {
     extend: {
       colors: {
