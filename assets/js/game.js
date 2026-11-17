@@ -52,7 +52,7 @@
     classic: (t) => 6 + 26 * smooth(0, 0.78, t),
     buzz: () => 4,
   };
-  const BOOK = { fade: 'Waschen · Schneiden · Stylen', classic: 'Waschen · Schneiden · Stylen', buzz: 'Fast Cut' };
+  const BOOK = { fade: 'sv_wss', classic: 'sv_wss', buzz: 'sv_fast' };   // IDs der Leistungen (Plattform)
   const LABEL = { fade: 'Fade', classic: 'Classic', buzz: 'Buzz' };
 
   let seed = 1;

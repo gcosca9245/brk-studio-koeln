@@ -32,10 +32,12 @@
           <li><a href="#studio">Studio</a></li>
           <li><a href="#team">Team</a></li>
           <li><a href="#galerie">Galerie</a></li>
+          <li><a href="#bewertungen">Bewertungen</a></li>
           <li><a href="#kontakt">Kontakt</a></li>
         </ul>
       </nav>
       <div class="flex items-center gap-3">
+        <a href="konto/" class="head-account hidden md:inline-flex" data-account-link data-admin="admin/">Anmelden</a>
         <a href="#buchen" class="btn btn-light btn-sm hidden sm:inline-flex">Termin buchen</a>
         <button type="button" class="menu-toggle lg:hidden" data-menu-toggle aria-expanded="false" aria-controls="mobile-menu">
           <span class="sr-only">Menü öffnen</span>
@@ -54,6 +56,8 @@
         <li><a href="#team" data-menu-link>Team</a></li>
         <li><a href="#galerie" data-menu-link>Galerie</a></li>
         <li><a href="#buchen" data-menu-link>Termin buchen</a></li>
+        <li><a href="#bewertungen" data-menu-link>Bewertungen</a></li>
+        <li><a href="konto/" data-menu-link>Kundenkonto</a></li>
         <li><a href="#kontakt" data-menu-link>Kontakt</a></li>
       </ul>
       <p class="mobile-menu__meta">Fleischmengergasse 29 · 50676 Köln<br><a href="https://www.instagram.com/brk.studio.koeln/" target="_blank" rel="noopener">@brk.studio.koeln</a></p>
@@ -105,20 +109,20 @@
           <div class="menu-col" data-reveal-group>
             <h3 class="menu-col__title">Herren</h3>
             <ul class="menu-list">
-              <li class="svc" data-reveal-item>
+              <li class="svc" data-reveal-item data-svc="sv_wss">
                 <div class="svc__top"><h4 class="svc__name">Waschen · Schneiden · Stylen</h4><p class="svc__price"><span class="sr-only">Preis: </span>36&nbsp;€</p></div>
                 <p class="svc__desc">Beratung, Haarwäsche, Schnitt nach deinem Typ und Styling zum Schluss.</p>
-                <div class="svc__foot"><span class="svc__time">ca. 45 Min.</span><a href="#buchen" class="svc__book" data-book="Waschen · Schneiden · Stylen">Buchen<span class="sr-only">: Waschen, Schneiden, Stylen</span><span class="arrow" aria-hidden="true"></span></a></div>
+                <div class="svc__foot"><span class="svc__time">ca. 45 Min.</span><a href="#buchen" class="svc__book" data-book="sv_wss">Buchen<span class="sr-only">: Waschen, Schneiden, Stylen</span><span class="arrow" aria-hidden="true"></span></a></div>
               </li>
-              <li class="svc" data-reveal-item>
+              <li class="svc" data-reveal-item data-svc="sv_bart">
                 <div class="svc__top"><h4 class="svc__name">Haarschnitt + Bart</h4><p class="svc__price"><span class="sr-only">Preis: </span>45&nbsp;€</p></div>
                 <p class="svc__desc">Schnitt und Bartformen in einem Termin, Konturen sauber nachgezogen.</p>
-                <div class="svc__foot"><span class="svc__time">ca. 1 Std.</span><a href="#buchen" class="svc__book" data-book="Haarschnitt + Bart">Buchen<span class="sr-only">: Haarschnitt und Bart</span><span class="arrow" aria-hidden="true"></span></a></div>
+                <div class="svc__foot"><span class="svc__time">ca. 1 Std.</span><a href="#buchen" class="svc__book" data-book="sv_bart">Buchen<span class="sr-only">: Haarschnitt und Bart</span><span class="arrow" aria-hidden="true"></span></a></div>
               </li>
-              <li class="svc" data-reveal-item>
+              <li class="svc" data-reveal-item data-svc="sv_fast">
                 <div class="svc__top"><h4 class="svc__name">Fast Cut</h4><p class="svc__price"><span class="sr-only">Preis: </span>25&nbsp;€</p></div>
                 <p class="svc__desc">Nur die Seiten, wenn es zwischen zwei Terminen schnell gehen soll.</p>
-                <div class="svc__foot"><span class="svc__time">ca. 15 Min.</span><a href="#buchen" class="svc__book" data-book="Fast Cut">Buchen<span class="sr-only">: Fast Cut</span><span class="arrow" aria-hidden="true"></span></a></div>
+                <div class="svc__foot"><span class="svc__time">ca. 15 Min.</span><a href="#buchen" class="svc__book" data-book="sv_fast">Buchen<span class="sr-only">: Fast Cut</span><span class="arrow" aria-hidden="true"></span></a></div>
               </li>
             </ul>
           </div>
@@ -126,25 +130,25 @@
           <div class="menu-col" data-reveal-group>
             <h3 class="menu-col__title">Damen</h3>
             <ul class="menu-list">
-              <li class="svc" data-reveal-item>
+              <li class="svc" data-reveal-item data-svc="sv_sf">
                 <div class="svc__top"><h4 class="svc__name">Schneiden + Föhnen</h4><p class="svc__price"><span class="sr-only">Preis: </span>55–65&nbsp;€</p></div>
                 <p class="svc__desc">Waschen, Schneiden und Föhnen inklusive Conditioner. Der Preis richtet sich nach der Haarlänge.</p>
-                <div class="svc__foot"><span class="svc__time">ca. 1 Std.</span><a href="#buchen" class="svc__book" data-book="Schneiden + Föhnen">Buchen<span class="sr-only">: Schneiden und Föhnen</span><span class="arrow" aria-hidden="true"></span></a></div>
+                <div class="svc__foot"><span class="svc__time">ca. 1 Std.</span><a href="#buchen" class="svc__book" data-book="sv_sf">Buchen<span class="sr-only">: Schneiden und Föhnen</span><span class="arrow" aria-hidden="true"></span></a></div>
               </li>
-              <li class="svc" data-reveal-item>
+              <li class="svc" data-reveal-item data-svc="sv_bal">
                 <div class="svc__top"><h4 class="svc__name">Balayage</h4><p class="svc__price"><span class="svc__from">ab</span> 249&nbsp;€</p></div>
                 <p class="svc__desc">Frei gemalte, weiche Farbverläufe. Komplett mit Waschen, Schnitt und Föhnen.</p>
-                <div class="svc__foot"><span class="svc__time">ca. 3 Std. 20 Min.</span><a href="#buchen" class="svc__book" data-book="Balayage">Buchen<span class="sr-only">: Balayage</span><span class="arrow" aria-hidden="true"></span></a></div>
+                <div class="svc__foot"><span class="svc__time">ca. 3 Std. 20 Min.</span><a href="#buchen" class="svc__book" data-book="sv_bal">Buchen<span class="sr-only">: Balayage</span><span class="arrow" aria-hidden="true"></span></a></div>
               </li>
-              <li class="svc" data-reveal-item>
+              <li class="svc" data-reveal-item data-svc="sv_str">
                 <div class="svc__top"><h4 class="svc__name">Strähnen</h4><p class="svc__price"><span class="svc__from">ab</span> 155&nbsp;€</p></div>
                 <p class="svc__desc">Das Komplettpaket: Waschen, Schneiden, Färben, Strähnen, Tönen und Föhnen.</p>
-                <div class="svc__foot"><span class="svc__time">ca. 3 Std. 20 Min.</span><a href="#buchen" class="svc__book" data-book="Strähnen">Buchen<span class="sr-only">: Strähnen</span><span class="arrow" aria-hidden="true"></span></a></div>
+                <div class="svc__foot"><span class="svc__time">ca. 3 Std. 20 Min.</span><a href="#buchen" class="svc__book" data-book="sv_str">Buchen<span class="sr-only">: Strähnen</span><span class="arrow" aria-hidden="true"></span></a></div>
               </li>
             </ul>
           </div>
         </div>
-        <p class="fineprint" data-reveal>Weitere Leistungen wie Schüler- und Studentenschnitt, Glossing oder Föhnen findest du auf <a href="https://www.planity.com/de-DE/brk-studio-50676-koln" target="_blank" rel="noopener">Planity</a>.</p>
+        <p class="fineprint" data-reveal>Weitere Leistungen wie Schüler- und Studentenschnitt, Glossing oder Föhnen auf Anfrage im Studio.</p>
       </div>
     </section>
 
@@ -159,7 +163,7 @@
             <dl class="studio__facts" data-reveal>
               <div><dt>Getränk</dt><dd>Kaffee oder Bier, inklusive</dd></div>
               <div><dt>Lage</dt><dd>Fleischmengergasse 29, wenige Schritte vom Neumarkt</dd></div>
-              <div><dt>Termine</dt><dd>Online über Planity oder hier auf der Seite anfragen</dd></div>
+              <div><dt>Termine</dt><dd>Online mit echten freien Zeiten, rund um die Uhr</dd></div>
             </dl>
           </div>
         </div>
@@ -254,83 +258,64 @@
       <div class="wrap gallery__progress" aria-hidden="true"><span class="gallery__bar"><span data-gallery-bar></span></span></div>
     </section>
 
-    <!-- ============ BUCHUNG ============ -->
+    <!-- ============ BUCHUNG (echte freie Zeiten aus der Plattform) ============ -->
     <section class="section bg-paper text-ink" id="buchen" aria-labelledby="buchen-title">
       <div class="wrap booking">
         <div class="booking__intro">
           <p class="eyebrow" data-reveal>Termin</p>
           <h2 id="buchen-title" class="h2" data-reveal>Such dir<br>deinen Stuhl aus.</h2>
-          <p class="lede" data-reveal>Leistung wählen, Tag wählen, Uhrzeit wählen. Wir bestätigen deinen Wunschtermin persönlich.</p>
+          <p class="lede" data-reveal>Was du hier siehst, ist frei. Leistung wählen, Uhrzeit antippen, in einer Minute gebucht.</p>
           <div class="planity" data-reveal>
-            <p class="planity__label">Lieber sofort verbindlich?</p>
-            <a class="btn btn-dark" href="https://www.planity.com/de-DE/brk-studio-50676-koln" target="_blank" rel="noopener">Direkt bei Planity buchen<span class="ext" aria-hidden="true"></span><span class="sr-only"> (öffnet in neuem Tab)</span></a>
-            <p class="planity__hint">Echtzeit-Kalender, Bestätigung per E-Mail.</p>
+            <p class="planity__label">Schon einen Termin?</p>
+            <a class="btn btn-dark" href="konto/" data-site-account>Im Kundenkonto verwalten</a>
+            <p class="planity__hint">Verschieben, stornieren und nach dem Besuch bewerten.</p>
           </div>
         </div>
 
         <div class="booking__panel" data-reveal>
-          <p class="demo-flag"><span class="demo-flag__dot" aria-hidden="true"></span>Demo: Dieses Formular sendet keine Daten. Die freien Zeiten sind simuliert.</p>
-          <form class="booking__form" data-booking novalidate>
+          <p class="demo-flag"><span class="demo-flag__dot" aria-hidden="true"></span>Demo: Termine werden nur in diesem Browser gespeichert und erscheinen sofort im Studio-Pult.</p>
+          <div class="booking__form" data-site-booking>
             <fieldset class="field-group">
               <legend class="label">Leistung</legend>
-              <div class="svc-pick" role="radiogroup" aria-describedby="err-service">
-                <p class="svc-pick__group">Herren</p>
-                <label class="pill"><input type="radio" name="service" value="Waschen · Schneiden · Stylen" data-duration="45"><span>Waschen · Schneiden · Stylen <em>36&nbsp;€</em></span></label>
-                <label class="pill"><input type="radio" name="service" value="Haarschnitt + Bart" data-duration="60"><span>Haarschnitt + Bart <em>45&nbsp;€</em></span></label>
-                <label class="pill"><input type="radio" name="service" value="Fast Cut" data-duration="15"><span>Fast Cut <em>25&nbsp;€</em></span></label>
-                <p class="svc-pick__group">Damen</p>
-                <label class="pill"><input type="radio" name="service" value="Schneiden + Föhnen" data-duration="60"><span>Schneiden + Föhnen <em>55–65&nbsp;€</em></span></label>
-                <label class="pill"><input type="radio" name="service" value="Balayage" data-duration="200"><span>Balayage <em>ab 249&nbsp;€</em></span></label>
-                <label class="pill"><input type="radio" name="service" value="Strähnen" data-duration="200"><span>Strähnen <em>ab 155&nbsp;€</em></span></label>
-              </div>
-              <p class="error" id="err-service" data-error="service" aria-live="polite"></p>
+              <div class="svc-pick" data-site-services role="radiogroup"></div>
             </fieldset>
-
             <fieldset class="field-group">
-              <legend class="label">Datum</legend>
-              <div class="days" data-days role="radiogroup" aria-describedby="err-date"></div>
-              <p class="error" id="err-date" data-error="date" aria-live="polite"></p>
+              <legend class="label">Bei</legend>
+              <div class="svc-pick" data-site-staff role="radiogroup"></div>
             </fieldset>
-
             <fieldset class="field-group">
-              <legend class="label">Uhrzeit <span class="label__hint" data-slot-hint>Bitte zuerst einen Tag wählen</span></legend>
-              <div class="slots" data-slots role="radiogroup" aria-describedby="err-time"></div>
-              <p class="error" id="err-time" data-error="time" aria-live="polite"></p>
+              <legend class="label">Datum <span class="label__hint" data-site-days-hint></span></legend>
+              <div class="days" data-site-days role="radiogroup"></div>
             </fieldset>
-
-            <div class="field-row">
-              <div class="field">
-                <label class="label" for="f-name">Name</label>
-                <input class="input" id="f-name" name="name" type="text" autocomplete="name" placeholder="Vor- und Nachname…" aria-describedby="err-name" required>
-                <p class="error" id="err-name" data-error="name" aria-live="polite"></p>
-              </div>
-              <div class="field">
-                <label class="label" for="f-phone">Telefon</label>
-                <input class="input" id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="z. B. 0171 2345678…" aria-describedby="err-phone" required>
-                <p class="error" id="err-phone" data-error="phone" aria-live="polite"></p>
-              </div>
-            </div>
-            <div class="field">
-              <label class="label" for="f-msg">Nachricht <span class="label__hint">optional</span></label>
-              <textarea class="input input--area" id="f-msg" name="message" rows="3" autocomplete="off" placeholder="Wünsche, Haarlänge, Referenzbild auf Instagram…"></textarea>
-            </div>
+            <fieldset class="field-group">
+              <legend class="label">Uhrzeit <span class="label__hint" data-site-slot-hint>Bitte zuerst eine Leistung wählen</span></legend>
+              <div class="slot-wrap" data-site-slots aria-live="polite"></div>
+            </fieldset>
             <div class="booking__submit">
-              <button type="submit" class="btn btn-dark btn-wide">Termin anfragen</button>
-              <p class="booking__summary" data-summary aria-live="polite"></p>
-            </div>
-          </form>
-
-          <div class="booking__done" data-booking-done hidden tabindex="-1">
-            <p class="eyebrow">Demo-Bestätigung</p>
-            <h3 class="h3" data-done-title>Danke.</h3>
-            <p class="booking__done-text" data-done-text></p>
-            <p class="booking__done-note">Dies ist eine Vorschau. Es wurde nichts gesendet. Für einen verbindlichen Termin nutze bitte Planity.</p>
-            <div class="booking__done-actions">
-              <a class="btn btn-dark" href="https://www.planity.com/de-DE/brk-studio-50676-koln" target="_blank" rel="noopener">Bei Planity buchen<span class="sr-only"> (öffnet in neuem Tab)</span></a>
-              <button type="button" class="link-quiet link-quiet--dark" data-booking-reset>Neue Anfrage</button>
+              <a class="btn btn-dark btn-wide is-disabled" href="buchen/" data-site-continue aria-disabled="true">Weiter zur Buchung</a>
+              <p class="booking__summary" data-site-summary aria-live="polite"></p>
             </div>
           </div>
+          <noscript><p>Für die Online-Buchung wird JavaScript benötigt. Alternativ: Instagram @brk.studio.koeln.</p></noscript>
         </div>
+      </div>
+    </section>
+
+    <!-- ============ BEWERTUNGEN ============ -->
+    <section class="section bg-night reviews" id="bewertungen" aria-labelledby="bewertungen-title">
+      <div class="wrap reviews__grid">
+        <div class="reviews__head">
+          <p class="eyebrow eyebrow--light" data-reveal>Bewertungen</p>
+          <h2 id="bewertungen-title" class="h2" data-reveal>Was Gäste sagen.</h2>
+          <div class="score" data-reveal data-score>
+            <p class="score__num"><span data-score-avg>–</span><small>von 5</small></p>
+            <div class="score__meta"><span class="score__stars" data-score-stars></span><span data-score-count></span></div>
+            <ul class="score__dist" data-score-dist aria-label="Verteilung der Sterne"></ul>
+          </div>
+          <p class="reviews__note" data-reveal><span class="demo-flag__dot" aria-hidden="true"></span>Demo: Einträge mit „Beispiel“ sind Beispielbewertungen. Echte Bewertungen kommen von Gästen mit Konto und werden vor der Veröffentlichung geprüft.</p>
+          <a class="link-quiet" href="konto/#termine" data-reveal>Nach deinem Termin bewerten</a>
+        </div>
+        <ul class="reviews__list" data-reviews-list></ul>
       </div>
     </section>
 
@@ -377,7 +362,7 @@
             <p class="game__done-title" tabindex="-1" data-game-done-title>Sitzt.</p>
             <p class="game__done-text" data-game-done-text>Jetzt das Original buchen.</p>
             <div class="game__done-actions">
-              <a class="btn btn-dark" href="#buchen" data-book="Waschen · Schneiden · Stylen" data-game-book>Termin buchen</a>
+              <a class="btn btn-dark" href="#buchen" data-book="sv_wss" data-game-book>Termin buchen</a>
               <button type="button" class="link-quiet link-quiet--dark" data-game-again>Nochmal</button>
             </div>
           </div>
@@ -437,6 +422,7 @@
       <nav aria-label="Rechtliches und Social Media" class="footer__nav">
         <a href="impressum.html">Impressum</a>
         <a href="datenschutz.html">Datenschutz</a>
+        <a href="admin/">Studio-Pult</a>
         <a href="https://www.instagram.com/brk.studio.koeln/" target="_blank" rel="noopener">Instagram</a>
         <a href="#top">Nach oben</a>
       </nav>
@@ -452,5 +438,6 @@
   <script src="assets/vendor/lenis.min.js" defer></script>
   <script src="assets/js/main.js" defer></script>
   <script src="assets/js/game.js" defer></script>
+  <script type="module" src="assets/js/app/site.js"></script>
 </body>
 </html>
