@@ -4,10 +4,14 @@ import { $, $$, toast, openDialog, confirmDialog, stars, initChrome, esc, addDay
 import { fmtPrice, fmtDuration, mondayOf, weekday, parseHHMM } from './util.js';
 import { dayHours } from './core.js';
 import { authFormsHTML, bindAuthForms } from './auth-forms.js';
+import { initPult, renderPanel, allowed, idle } from './pult/index.js';
+import { pult } from './pult-api.js';
+import { P as PS } from './pult/kit.js';
+import { kasse } from './pult/kasse.js';
 
 const PPM = 1.5;           // Pixel pro Minute im Kalender
 const SNAP = 15;
-const S = { view: window.matchMedia('(max-width: 767px)').matches ? 'day' : 'day', date: api.now().date, staff: 'all', rf: 'pending' };
+const S = { view: 'day', mode: 'staff', date: api.now().date, staff: 'all', rf: 'pending' };
 let cat, data, me;
 
 async function init() {
@@ -15,19 +19,23 @@ async function init() {
   try { me = await api.admin.guard(); } catch (_) { me = null; }
   me ? showPult() : showAuth();
 }
-function showAuth() {
+function showAuth(msg) {
+  idle.stop();
   $('[data-pult]').hidden = true; $('[data-adm-auth]').hidden = false;
   document.body.classList.add('app--dark');
   const box = $('[data-auth-forms]');
   box.innerHTML = authFormsHTML({ idp: 'adm', admin: true });
-  bindAuthForms(box, { admin: true, onAuth: async (u) => { me = u; showPult(); } });
+  bindAuthForms(box, { admin: true, onAuth: async (u) => { me = u; try { await pult.logLogin(); } catch (_) { /* optional */ } showPult(); } });
+  if (msg) { const e = box.querySelector('[data-error]'); if (e) e.textContent = msg; }
 }
+idle.onLogout = async (msg) => { await api.logout(); me = null; showAuth(msg); };
 async function showPult() {
   document.body.classList.remove('app--dark');
   $('[data-adm-auth]').hidden = true; $('[data-pult]').hidden = false;
-  $('[data-me]').innerHTML = `<b>${esc(me.name)}</b><span>Inhaber</span>`;
+  $('[data-me]').innerHTML = `<b>${esc(me.name)}</b><span>${me.role === 'admin' ? 'Inhaber' : 'Mitarbeiter'}</span>`;
+  await initPult(me, nav);
   await reload();
-  nav((location.hash || '#kalender').slice(1));
+  nav((location.hash || (me.role === 'admin' ? '#uebersicht' : '#kalender')).slice(1));
 }
 async function reload() {
   cat = await api.catalog();
@@ -38,26 +46,32 @@ async function reload() {
   const active = cat.staff.filter((s) => s.active !== false);
   if (S.staff !== 'all' && !active.some((s) => s.id === S.staff)) S.staff = 'all';
   sel.innerHTML = `<option value="all">Ganzes Team</option>${active.map((s) => `<option value="${s.id}" ${S.staff === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}`;
-  renderCal(); renderReviews(); renderStaff(); renderServices(); renderSettings();
+  renderCal(); renderReviews(); renderStaff(); renderServices(); if (me.role === 'admin') renderSettings();
 }
-window.addEventListener('brk:data', async () => { if (me && !dragging) { cat = await api.catalog(); data = await api.admin.data(); renderCal(); } });
+window.addEventListener('brk:data', async () => { if (me && !dragging) { try { cat = await api.catalog(); data = await api.admin.data(); renderCal(); } catch (_) { /* abgemeldet */ } } });
 
 /* ---------- Navigation ---------- */
-function nav(which) {
-  if (!$(`[data-panel="${which}"]`)) which = 'kalender';
+function nav(target) {
+  let [which, sub] = String(target).split('/');
+  if (!$(`[data-panel="${which}"]`) || !allowed(which)) which = 'kalender';
   $$('[data-panel]').forEach((p) => { p.hidden = p.dataset.panel !== which; });
-  $$('[data-nav]').forEach((b) => b.toggleAttribute('aria-current', b.dataset.nav === which));
-  if (location.hash.slice(1) !== which) history.replaceState(null, '', `#${which}`);
+  $$('[data-nav]').forEach((b) => { if (b.dataset.nav === which) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  const h = sub ? `${which}/${sub}` : which;
+  if (location.hash.slice(1) !== h) history.replaceState(null, '', `#${h}`);
+  if (which === 'kalender') renderCal(); else renderPanel(which, sub);
+  document.body.classList.toggle('is-kasse', which === 'kasse');
 }
-$$('[data-nav]').forEach((b) => b.addEventListener('click', () => { nav(b.dataset.nav); $(`[data-panel="${b.dataset.nav}"] h1`).focus?.(); }));
+$$('[data-nav]').forEach((b) => b.addEventListener('click', () => { nav(b.dataset.nav); const h = $(`[data-panel="${b.dataset.nav}"] h1`); if (h) h.focus({ preventScroll: false }); }));
+window.addEventListener('hashchange', () => { if (me) nav(location.hash.slice(1)); });
 $('[data-logout]').addEventListener('click', async () => { await api.logout(); me = null; showAuth(); });
 
 /* ---------- Kalender ---------- */
 const svcOf = (id) => cat.services.find((s) => s.id === id) || { name: 'Leistung', price: 0, duration: 30 };
 const staffOf = (id) => cat.staff.find((s) => s.id === id) || { name: '–' };
 
+const resCols = () => (PS.db ? PS.db.resources : []).map((r) => ({ id: r.id, name: r.name, role: r.type === 'chair' ? 'Stuhl' : r.type === 'color' ? 'Farbe' : 'Waschen', hours: {}, isRes: true }));
 function columns() {
-  const team = cat.staff.filter((s) => s.active !== false && (S.staff === 'all' || s.id === S.staff));
+  const team = S.mode === 'res' ? resCols() : cat.staff.filter((s) => s.active !== false && (S.staff === 'all' || s.id === S.staff));
   if (S.view === 'day') return team.map((st) => ({ date: S.date, st }));
   const mon = mondayOf(S.date), cols = [];
   for (let i = 0; i < 7; i++) { const date = addDays(mon, i); for (const st of team) cols.push({ date, st }); }
@@ -98,14 +112,18 @@ function renderCal() {
       if (hrs[0] > lo) col += `<div class="cal__off" style="top:0;height:${(hrs[0] - lo) * PPM}px"></div>`;
       if (hrs[1] < hi) col += `<div class="cal__off" style="top:${(hrs[1] - lo) * PPM}px;height:${(hi - hrs[1]) * PPM}px"></div>`;
     }
-    for (const b of data.blockers.filter((x) => x.date === c.date && (!x.staffId || x.staffId === c.st.id))) {
-      col += `<button type="button" class="blk" data-block="${b.id}" style="top:${(b.start - lo) * PPM}px;height:${(b.end - b.start) * PPM}px"><span class="blk__t">${hhmm(b.start)}–${hhmm(b.end)}</span><span class="blk__r">${esc(b.reason || 'Blocker')}${b.staffId ? '' : ' · Studio'}</span></button>`;
+    if (!c.st.isRes) {
+      const br = c.st.breaks && (c.st.breaks[weekday(c.date)] || c.st.breaks.all);
+      if (br && hrs) col += `<div class="cal__pause" style="top:${(br[0] - lo) * PPM}px;height:${(br[1] - br[0]) * PPM}px" aria-hidden="true"><span>Pause</span></div>`;
+      for (const b of data.blockers.filter((x) => x.date === c.date && (!x.staffId || x.staffId === c.st.id))) {
+        col += `<button type="button" class="blk${b.kind === 'absence' ? ' blk--absence' : ''}" data-block="${b.id}" style="top:${(b.start - lo) * PPM}px;height:${(b.end - b.start) * PPM}px"><span class="blk__t">${b.kind === 'absence' ? esc(b.absenceType || 'Abwesend') : `${hhmm(b.start)}–${hhmm(b.end)}`}</span><span class="blk__r">${esc(b.reason || 'Blocker')}${b.staffId ? '' : ' · Studio'}</span></button>`;
+      }
     }
-    for (const a of data.appointments.filter((x) => x.date === c.date && x.staffId === c.st.id && x.status === 'booked')) {
+    for (const a of data.appointments.filter((x) => x.date === c.date && (c.st.isRes ? resOf(x) === c.st.id : x.staffId === c.st.id) && x.status === 'booked')) {
       const svc = svcOf(a.serviceId);
       const past = api.isPast(a);
-      col += `<button type="button" class="ev${a.source === 'customer' ? ' ev--online' : ''}${past ? ' is-past' : ''}${a.duration <= 20 ? ' ev--tiny' : ''}" data-appt="${a.id}" style="top:${(a.start - lo) * PPM}px;height:${a.duration * PPM - 2}px" aria-label="${esc(a.name)}, ${esc(svc.name)}, ${hhmm(a.start)} bis ${hhmm(a.start + a.duration)}">
-        <span class="ev__t">${hhmm(a.start)}–${hhmm(a.start + a.duration)}</span><span class="ev__n">${esc(a.name.replace(/^Beispiel · /, ''))}${a.example ? '<i class="ev__ex">Beispiel</i>' : ''}</span><span class="ev__s">${esc(svc.name)}</span></button>`;
+      col += `<button type="button" class="ev${a.source === 'customer' ? ' ev--online' : ''}${past ? ' is-past' : ''}${a.paidBonId ? ' is-paid' : ''}${a.duration <= 20 ? ' ev--tiny' : ''}" data-appt="${a.id}" style="top:${(a.start - lo) * PPM}px;height:${a.duration * PPM - 2}px" aria-label="${esc(a.name)}, ${esc(svc.name)}, ${hhmm(a.start)} bis ${hhmm(a.start + a.duration)}${a.paidBonId ? ', bezahlt' : ''}">
+        <span class="ev__t">${hhmm(a.start)}–${hhmm(a.start + a.duration)}${a.paidBonId ? '<i class="ev__paid">bezahlt</i>' : a.deposit ? '<i class="ev__paid">Anzahlung</i>' : ''}</span><span class="ev__n">${esc(a.name.replace(/^Beispiel · /, ''))}${a.example ? '<i class="ev__ex">Beispiel</i>' : ''}</span><span class="ev__s">${esc(svc.name)}${c.st.isRes ? ` · ${esc(staffOf(a.staffId).name)}` : ''}</span></button>`;
     }
     if (isToday && now.minutes > lo && now.minutes < hi) col += `<div class="cal__now" style="top:${(now.minutes - lo) * PPM}px" aria-hidden="true"></div>`;
     col += '</div>';
@@ -116,12 +134,16 @@ function renderCal() {
   cal.style.setProperty('--cols', cols.length);
   cal.style.setProperty('--colmin', `${minCol}px`);
   cal.dataset.lo = lo;
+  cal.dataset.mode = S.mode;
+  $$('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === S.mode));
   cal.innerHTML = `<div class="cal__head">${head}</div><div class="cal__body">${body}</div>`;
   renderKpis(cols);
 }
 
 function renderKpis(cols) {
   const dates = [...new Set(cols.map((c) => c.date))];
+  // Plätze-Ansicht: Kennzahlen über das ganze Team
+  if (cols.some((c) => c.st.isRes)) cols = dates.flatMap((date) => cat.staff.filter((s) => s.active !== false).map((st) => ({ st, date })));
   const ids = new Set(cols.map((c) => c.st.id));
   const appts = data.appointments.filter((a) => a.status === 'booked' && dates.includes(a.date) && ids.has(a.staffId));
   const revenue = appts.reduce((s, a) => s + svcOf(a.serviceId).price, 0);
@@ -142,6 +164,9 @@ $('[data-cal-prev]').addEventListener('click', () => { S.date = addDays(S.date, 
 $('[data-cal-next]').addEventListener('click', () => { S.date = addDays(S.date, S.view === 'day' ? 1 : 7); renderCal(); });
 $('[data-cal-today]').addEventListener('click', () => { S.date = api.now().date; renderCal(); });
 $$('[data-view]').forEach((b) => b.addEventListener('click', () => { S.view = b.dataset.view; renderCal(); }));
+$$('[data-mode]').forEach((b) => b.addEventListener('click', () => { S.mode = b.dataset.mode; renderCal(); }));
+/** Platz eines Termins: gespeichert oder Standardplatz des Mitarbeiters bzw. Farbplatz */
+function resOf(a) { if (a.resourceId) return a.resourceId; const s = cat.services.find((x) => x.id === a.serviceId); if (s && s.resourceType === 'color') return 'rs_3'; const st = cat.staff.find((x) => x.id === a.staffId); return (st && st.resourceId) || 'rs_2'; }
 $('[data-cal-staff]').addEventListener('change', (e) => { S.staff = e.target.value; renderCal(); });
 $('[data-new-appt]').addEventListener('click', () => apptDialog({ date: S.date, start: 12 * 60, staffId: S.staff === 'all' ? cat.staff[0].id : S.staff }));
 $('[data-new-block]').addEventListener('click', () => blockDialog({ date: S.date, start: 12 * 60, end: 13 * 60, staffId: S.staff === 'all' ? '' : S.staff }));
@@ -152,7 +177,7 @@ cal.addEventListener('click', (e) => {
   if (suppressClick) { suppressClick = false; return; }
   const ev = e.target.closest('[data-appt]'); if (ev) { apptDetail(ev.dataset.appt); return; }
   const bl = e.target.closest('[data-block]'); if (bl) { blockDialog(data.blockers.find((b) => b.id === bl.dataset.block)); return; }
-  const col = e.target.closest('.cal__col'); if (!col) return;
+  const col = e.target.closest('.cal__col'); if (!col || cal.dataset.mode === 'res') return;
   const m = Number(cal.dataset.lo) + Math.floor((e.clientY - col.getBoundingClientRect().top) / PPM / SNAP) * SNAP;
   quickNew({ date: col.dataset.date, staffId: col.dataset.staff, start: m });
 });
@@ -174,7 +199,7 @@ function quickNew(p) {
 let dragging = null, suppressClick = false;
 cal.addEventListener('pointerdown', (e) => {
   const ev = e.target.closest('[data-appt]');
-  if (!ev || e.pointerType === 'touch' || e.button !== 0) return;
+  if (!ev || e.pointerType === 'touch' || e.button !== 0 || cal.dataset.mode === 'res') return;
   const a = data.appointments.find((x) => x.id === ev.dataset.appt);
   dragging = { ev, a, x0: e.clientX, y0: e.clientY, moved: false, pid: e.pointerId };
 });
@@ -249,7 +274,9 @@ function apptDetail(id) {
         <div><dt>Quelle</dt><dd>${a.source === 'customer' ? 'Online vom Kunden gebucht' : 'Im Studio angelegt'}${a.example ? ' · <span class="tag">Beispiel</span>' : ''}</dd></div>
         <div><dt>Telefon</dt><dd>${a.phone ? `<a href="tel:${esc(a.phone.replace(/\s/g, ''))}">${esc(a.phone)}</a>` : '–'}</dd></div>
         <div><dt>Notiz</dt><dd>${esc(a.note || '–')}</dd></div>
+        <div><dt>Kasse</dt><dd>${a.paidBonId ? `bezahlt${PS.db ? ` · Bon ${esc((PS.db.transactions.find((t) => t.id === a.paidBonId) || {}).no || '')}` : ''}` : 'noch nicht kassiert'}${a.deposit ? ` · Anzahlung ${(a.deposit.amount / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}` : ''}</dd></div>
       </dl>
+      ${a.paidBonId ? '' : `<div class="row-actions row-actions--start"><button type="button" class="btn btn-dark btn-sm" data-act="cash">Kassieren</button>${a.deposit ? '' : '<button type="button" class="btn btn-outline btn-sm" data-act="deposit">Anzahlung</button>'}${api.isPast(a) ? '<button type="button" class="btn btn-outline btn-sm" data-act="noshow">Nicht erschienen</button>' : ''}</div>`}
       <p class="label dlg__sub">Verschieben</p>
       <div class="grid3">
         <div class="field"><label class="label" for="ed-date">Datum</label><input class="input" type="date" id="ed-date" name="date" value="${a.date}"></div>
@@ -262,6 +289,12 @@ function apptDetail(id) {
   d.addEventListener('click', async (e) => {
     const b = e.target.closest('[data-act]'); if (!b) return;
     const f = $('form', d).elements;
+    if (b.dataset.act === 'cash' || b.dataset.act === 'deposit') { e.preventDefault(); d.close(); if (b.dataset.act === 'cash') kasse.fromAppointment(a.id); else kasse.deposit(a.id); nav('kasse'); return; }
+    if (b.dataset.act === 'noshow') {
+      e.preventDefault(); d.close();
+      if (!(await confirmDialog('Nicht erschienen?', 'Der Termin wird als No-Show markiert. Danach kannst du an der Kasse eine Ausfallgebühr buchen.', 'Markieren'))) return;
+      await pult.markNoShow(a.id); kasse.fee(a.id); toast('Als nicht erschienen markiert.'); nav('kasse'); return;
+    }
     if (b.dataset.act === 'ok') {
       e.preventDefault();
       try { await api.admin.moveAppointment(a.id, { date: f.date.value, start: Number(f.start.value), staffId: f.staffId.value }); d.close(); toast('Termin gespeichert.'); data = await api.admin.data(); renderCal(); } catch (x) { d.error(x.message); }

@@ -182,7 +182,7 @@
   if (title && motion) {
     const text = title.textContent.trim();
     title.setAttribute('aria-label', text);
-    title.innerHTML = text.split(' ').map((w) => `<span class="line" aria-hidden="true">${w.split('').map((c) => `<span class="char">${c}</span>`).join('')}</span>`).join('');
+    title.innerHTML = text.split(' ').map((w) => `<span class="line" aria-hidden="true">${w.split('').map((c) => `<span class="char">${c.replace(/[&<>]/g, (x) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[x]))}</span>`).join('')}</span>`).join('');
   }
   if (title) title.classList.add('is-split');
 
@@ -205,7 +205,7 @@
       iframe.src = 'https://www.google.com/maps?q=Fleischmengergasse+29,+50676+K%C3%B6ln&z=16&output=embed';
       iframe.title = 'Karte: BRK Studio, Fleischmengergasse 29, Köln';
       iframe.loading = 'lazy';
-      iframe.referrerPolicy = 'no-referrer-when-downgrade';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
       wrap.innerHTML = '';
       wrap.appendChild(iframe);
       iframe.focus();
@@ -254,8 +254,14 @@
   /* Studio: der Satz wird Wort für Wort beim Scrollen hell */
   const quote = $('[data-words]');
   if (quote) {
-    quote.innerHTML = quote.textContent.trim().split(/\s+/).map((w) => `<span class="word">${w}</span> `).join('');
-    gsap.fromTo($$('.word', quote), { opacity: 0.16 }, { opacity: 1, ease: 'none', stagger: 0.1, scrollTrigger: { trigger: '#studio', start: 'top 70%', end: 'center 45%', scrub: 0.6 } });
+    // Wörter per DOM statt innerHTML; Text bleibt für Screenreader ein Satz
+    const words = quote.textContent.trim().split(/\s+/);
+    quote.textContent = '';
+    for (const w of words) { const s = document.createElement('span'); s.className = 'word'; s.textContent = w; quote.append(s, ' '); }
+    // Abdunkeln erst kurz bevor der Satz ins Bild kommt: so bleibt der Text ohne Scrollen voll lesbar (Kontrast)
+    ScrollTrigger.create({ trigger: '#studio', start: 'top bottom+=60%', once: true, onEnter: () => {
+      gsap.fromTo($$('.word', quote), { opacity: 0.16 }, { opacity: 1, ease: 'none', stagger: 0.1, scrollTrigger: { trigger: '#studio', start: 'top 70%', end: 'center 45%', scrub: 0.6 } });
+    } });
   }
 
   /* Dezente Bild-Parallaxe in Rahmen */

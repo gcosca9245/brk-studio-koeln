@@ -97,7 +97,7 @@ $('[data-days-next]', root).addEventListener('click', async () => { S.from = add
 $('[data-book-submit]').addEventListener('click', async (e) => {
   const btn = e.currentTarget;
   if (!S.user) { toast('Bitte melde dich an oder lege ein Konto an.'); const f = $('[data-account] input'); if (f) { f.scrollIntoView({ block: 'center', behavior: 'smooth' }); f.focus({ preventScroll: true }); } return; }
-  if (S.user.role === 'admin') { toast('Als Admin bitte Termine im Studio-Pult anlegen.'); return; }
+  if (S.user.role !== 'customer') { toast('Als Team bitte Termine im Studio-Pult anlegen.'); return; }
   btn.disabled = true; btn.classList.add('is-busy');
   try {
     const a = await api.book({ serviceId: S.serviceId, staffId: S.staffId === 'any' ? null : S.staffId, date: S.date, start: S.start, note: $('[data-note]').value });
