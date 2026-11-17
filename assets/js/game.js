@@ -1,10 +1,15 @@
 /* =========================================================
-   BRK Studio – Mini-Spiel „Einmal Burak sein“
-   Canvas 2D, ohne externe Bibliotheken.
-   Szene in festen Einheiten (1000 × 900), skaliert auf Elementgröße × devicePixelRatio.
-   Statische Linienzeichnung wird einmal pro Größe vorgerendert; pro Frame
-   kommen nur Haare, Buraks Arm mit Schere und fallende Strähnen dazu.
-   Die Schleife läuft nur, solange das Spielfeld sichtbar ist.
+   BRK Studio – Mini-Spiel „Einmal Burak sein“ (Version 2)
+   Canvas 2D, ohne Bibliotheken.
+   Haarmodell: rund 520 Strähnen wachsen aus der Kopfhaut (Kappe über Stirn,
+   Scheitel, Seite und Nacken), liegen nach hinten gekämmt am Kopf an und fallen
+   hinter dem Kopf weich nach unten. Jede Strähne ist eine Polylinie.
+   Schneiden: nur bei gedrückter Maus bzw. aufgesetztem Finger. Für jede Bewegung
+   wird der Schnittpunkt zwischen Scherenweg (Liniensegment) und Strähne exakt
+   berechnet; die Strähne endet genau dort, das abgetrennte Stück fällt als eigenes Teil.
+   Fortschritt = Nähe zur Zielkontur (Fade, Classic, Buzz); zu kurz kostet wenig.
+   Statische Zeichnung und Haarebene werden gecacht, pro Frame nur Komposition,
+   Arm, Schere und fallende Stücke. Schleife nur bei Sichtbarkeit.
    ========================================================= */
 (() => {
   'use strict';
@@ -17,193 +22,306 @@
   if (!ctx) return;
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const W = 1000, H = 900, FLOOR = 832, TOP = 90;   // TOP: oberer Rand der sichtbaren Szene
-  const INK = '#1A1A1A', NIGHT = '#0A0A0A', COAL = '#2A2A2A', IRON = '#4A4A4A', ASH = '#B0B0B0', PAPER = '#F5F5F5', GOLD = '#C9A96E';
+  const mqMobile = window.matchMedia('(max-width: 639px)');
+  const W = 1000, H = 900, FLOOR = 832;
+  const INK = '#1A1A1A', NIGHT = '#0A0A0A', COAL = '#2A2A2A', IRON = '#4A4A4A', ASH = '#B0B0B0', GOLD = '#C9A96E';
 
   const pctEl = game.querySelector('[data-game-pct]');
   const barEl = game.querySelector('[data-game-bar]');
   const liveEl = game.querySelector('[data-game-live]');
   const doneEl = game.querySelector('[data-game-done]');
   const doneTitle = game.querySelector('[data-game-done-title]');
+  const doneText = game.querySelector('[data-game-done-text]');
   const actionsEl = game.querySelector('[data-game-actions]');
   const bookBtn = game.querySelector('[data-game-book]');
 
-  /* ---------- Szene: Kopf des Gastes, Buraks Schulter ---------- */
+  /* ---------- Szene ---------- */
   const HEAD = { x: 585, y: 345, r: 60 };
   const SHOULDER = { x: 312, y: 296 };
-  const UPPER = 150, FORE = 150, SCISSOR = 46;
-  const REACH = UPPER + FORE + SCISSOR - 10;
-  const REST = { x: 488, y: 262 };
+  const UPPER = 165, FORE = 165, SCISSOR = 46;
+  const REACH = UPPER + FORE + SCISSOR - 8;
+  const REST = { x: 470, y: 250 };
+  const TOL = 3;          // Toleranz an der Zielkontur (Szene-Einheiten)
+  const MINL = 1.5;       // kürzer geht es nicht (Kopfhaut)
+  const STEP = 5;         // Punktabstand einer Strähne
 
-  // Haaransatz: u = 0 Stirn, u = 1 Nacken (Winkel in Grad, Canvas-Koordinaten)
-  const angleAt = (u) => ((-30 - u * 210) * Math.PI) / 180;
-
-  // Ziel-Länge außerhalb der Kopfhaut je Stil (Szene-Einheiten)
+  const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  // Zielfrisuren: Länge je Strähne aus der Höhe des Haaransatzes (t = 1 Scheitel, 0 Nacken/Seite)
   const STYLES = {
-    fade: (u) => (u < 0.08 ? 36 : u < 0.4 ? 44 : u < 0.62 ? 44 - (u - 0.4) / 0.22 * 34 : u < 0.8 ? 10 - (u - 0.62) / 0.18 * 6 : 3),
-    classic: (u) => (u < 0.08 ? 38 : u < 0.45 ? 46 : 46 - (u - 0.45) / 0.55 * 26),
-    buzz: () => 6,
+    fade: (t) => 3 + 40 * smooth(0.45, 0.86, t),
+    classic: (t) => 6 + 26 * smooth(0, 0.78, t),
+    buzz: () => 4,
   };
   const BOOK = { fade: 'Waschen · Schneiden · Stylen', classic: 'Waschen · Schneiden · Stylen', buzz: 'Fast Cut' };
+  const LABEL = { fade: 'Fade', classic: 'Classic', buzz: 'Buzz' };
 
-  // Deterministischer Zufall, damit der Gast immer gleich „verwuschelt“ ankommt
-  let seed = 20260117;
+  let seed = 1;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
 
-  const SEG = 14;
+  /* Haarkappe: innerhalb des Schädels, über Haaransatz, Koteletten und Nacken, ohne Gesicht und Ohr */
+  function inCap(x, y) {
+    const dx = x - HEAD.x, dy = y - HEAD.y;
+    if (dx * dx + dy * dy > (HEAD.r - 1.2) ** 2) return false;
+    if (y > 296 && x > 602 + 34 * Math.max(0, 1 - (y - 296) / 48) ** 1.7) return false;   // Haaransatz: Stirn, Schläfe, Koteletten
+    if (x > 598 && y > 370) return false;                            // unter der Koteletten
+    if ((x - 586) ** 2 + (y - 360) ** 2 < 14 * 14) return false;     // Ohr
+    if (x > 572 && y > 376) return false;                            // Kiefer
+    return y < 401;                                                  // Nacken
+  }
+
   const strands = [];
+  /* Kämmrichtung: Kreisbahnen um einen Punkt vor dem Gesicht. Dadurch läuft das Haar
+     oben nach hinten, am Hinterkopf nach unten und an der Seite schräg nach hinten unten,
+     ohne Wirbel innerhalb der Haarkappe. */
+  const FLOW = { x: 655, y: 372 };
+  function flowDir(x, y) {
+    const rx = x - FLOW.x, ry = y - FLOW.y, m = Math.hypot(rx, ry) || 1;
+    return [ry / m, -rx / m];
+  }
   function buildHair() {
-    seed = 20260117;
+    seed = 7;
     strands.length = 0;
-    const N = 380;
-    for (let i = 0; i < N; i++) {
-      const u = Math.min(1, Math.max(0, (i + rnd() * 0.9) / N));
-      const a = angleAt(u) + (rnd() - 0.5) * 0.05;
-      const depth = HEAD.r * (0.74 + rnd() * 0.24);
-      const exit = HEAD.r - depth;
-      const nx = Math.cos(a), ny = Math.sin(a);
-      const len = exit + (u < 0.12 ? 92 : 104 + (1 - u) * 40) + rnd() * 48;
-      const step = len / SEG;
-      const grav = 0.15 + rnd() * 0.09;
-      const curl = (rnd() - 0.5) * 0.09;
-      const pts = new Float32Array((SEG + 1) * 2);
-      // Wuchsrichtung: nach hinten gekämmt (Tangente Richtung Nacken), Pony leicht nach vorn
-      const comb = u < 0.1 ? -0.35 : 0.75 + rnd() * 0.25;
-      let dx = nx * 0.7 + Math.sin(a) * comb, dy = ny * 0.7 - Math.cos(a) * comb;
-      { const m = Math.hypot(dx, dy); dx /= m; dy /= m; }
-      let x = HEAD.x + nx * depth, y = HEAD.y + ny * depth;
+    const roots = [];
+    // dichtes, leicht gestreutes Raster in der Kappe
+    for (let y = HEAD.y - HEAD.r; y < HEAD.y + HEAD.r; y += 3.6) {
+      for (let x = HEAD.x - HEAD.r; x < HEAD.x + HEAD.r; x += 3.6) {
+        const jx = x + (rnd() - 0.5) * 3, jy = y + (rnd() - 0.5) * 3;
+        if (inCap(jx, jy)) roots.push([jx, jy]);
+      }
+    }
+    // Haaransatz entlang der Kontur doppelt besetzt: saubere Silhouette
+    for (let a = -0.5; a > -4.05; a -= 0.016) {
+      for (const d of [2, 5]) {
+        const x = HEAD.x + Math.cos(a) * (HEAD.r - d), y = HEAD.y + Math.sin(a) * (HEAD.r - d);
+        if (inCap(x, y)) roots.push([x, y]);
+      }
+    }
+    // hinten liegende Wurzeln zuerst zeichnen, die Außenkontur obenauf
+    roots.sort((p, q) => Math.hypot(p[0] - HEAD.x, p[1] - HEAD.y) - Math.hypot(q[0] - HEAD.x, q[1] - HEAD.y));
+    for (const [x0, y0] of roots) {
+      const rho0 = Math.hypot(x0 - HEAD.x, y0 - HEAD.y);
+      const t = Math.min(1, Math.max(0, (HEAD.y + 18 - y0) / (HEAD.r + 18)));   // 1 Scheitel, 0 Nacken
+      const front = x0 > 592 && y0 > HEAD.y - 20;          // Koteletten bleiben kürzer
+      const L0 = (36 + 46 * t + rnd() * 12) * (front ? 0.55 : 1);
+      const vol = 3 + 9 * t + rnd() * 3;                 // wie weit das Haar über dem Kopf liegt
+      const nx0 = (x0 - HEAD.x) / (rho0 || 1), ny0 = (y0 - HEAD.y) / (rho0 || 1);
+      const ph = rnd() * 6.28, wav = 0.012 + rnd() * 0.02, bias = (rnd() - 0.5) * 0.16;
+      const n = Math.ceil(L0 / STEP);
+      const pts = new Float32Array((n + 1) * 2);
+      let x = x0, y = y0, dx = 0, dy = 0, fall = false;
       pts[0] = x; pts[1] = y;
-      for (let k = 1; k <= SEG; k++) {
-        if (k * step > exit + 8) {           // erst außerhalb der Kopfhaut zieht die Schwerkraft
-          dx += -dy * curl; dy += dx * curl;
-          dy += grav;
+      for (let k = 1; k <= n; k++) {
+        const sl = k * STEP;
+        if (!fall) {
+          let [fx, fy] = flowDir(x, y);
+          // anfangs aus der Kopfhaut heraus, dann angelegt
+          const lift = rho0 > HEAD.r - 7 ? Math.max(0, 1 - sl / 10) * 0.5 : 0;
+          const c = Math.cos(bias + Math.sin(sl * wav * 6 + ph) * 0.08), sn = Math.sin(bias + Math.sin(sl * wav * 6 + ph) * 0.08);
+          { const tx = fx * c - fy * sn; fy = fx * sn + fy * c; fx = tx; }
+          dx = fx + nx0 * lift; dy = fy + ny0 * lift;
+          const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
+          x += dx * STEP; y += dy * STEP;
+          // nicht weiter abstehen als das Volumen erlaubt: sanft an die Hülle legen
+          const r = Math.hypot(x - HEAD.x, y - HEAD.y), lim = HEAD.r + vol;
+          if (r > lim) { x = HEAD.x + ((x - HEAD.x) / r) * lim; y = HEAD.y + ((y - HEAD.y) / r) * lim; }
+          // unterhalb der Kopfmitte und hinter dem Ohr fällt es frei
+          if (y > HEAD.y + 22 && (r > HEAD.r - 4 || y > 392)) fall = true;
+        } else {
+          dy += 0.3; dx = dx * 0.86 - 0.06;
           const m = Math.hypot(dx, dy); dx /= m; dy /= m;
+          x += dx * STEP; y += dy * STEP;
+          if (x > 560 && y > 404) x = 560 - (y - 404) * 0.05;   // hinter dem Hals bleiben
         }
-        x += dx * step; y += dy * step;
         pts[k * 2] = x; pts[k * 2 + 1] = y;
       }
-      strands.push({ u, pts, step, L0: len, L: len, exit, T: 0, phase: rnd() * 6.28, from: len, tone: rnd() < 0.22 });
+      strands.push({ pts, n, L0, L: L0, T: 0, t, from: L0, hi: rnd() < 0.16, edge: rho0 > HEAD.r - 7 });
     }
+    buildCap();
     applyStyle();
   }
 
-  let style = 'fade';
-  function applyStyle() {
-    const f = STYLES[style];
-    for (const s of strands) s.T = Math.min(s.L0 - 4, s.exit + f(s.u));
-    if (bookBtn) bookBtn.dataset.book = BOOK[style];
+  /* Kopfhaut mit Stoppeln: Form der Haarkappe einmal rastern */
+  let capImg = null;
+  function buildCap() {
+    const R = 4, x0 = HEAD.x - HEAD.r, y0 = HEAD.y - HEAD.r, n = HEAD.r * 2 * R;
+    const cv = document.createElement('canvas'); cv.width = n; cv.height = n;
+    const c = cv.getContext('2d'), img = c.createImageData(n, n);
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      // weiche Kante über 4 Unterproben
+      let a = 0;
+      for (const [u, v] of [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) if (inCap(x0 + (i + u) / R, y0 + (j + v) / R)) a++;
+      if (!a) continue;
+      const o = (j * n + i) * 4; img.data[o] = 0x2a; img.data[o + 1] = 0x2a; img.data[o + 2] = 0x2a; img.data[o + 3] = a * 60;
+    }
+    c.putImageData(img, 0, 0);
+    capImg = { cv, x: x0, y: y0, s: 1 / R };
   }
 
-  /* ---------- Fortschritt ---------- */
-  let progress = 0, announced = 0, done = false;
-  function computeProgress() {
-    let a = 0, b = 0;
-    for (const s of strands) { const need = s.L0 - s.T; b += need; a += Math.min(need, s.L0 - s.L); }
-    return b > 0 ? a / b : 0;
+  let style = 'fade';
+  let contour = null;
+  function applyStyle() {
+    const f = STYLES[style];
+    for (const s of strands) s.T = Math.min(s.L0 - 2, f(s.t));
+    if (bookBtn) bookBtn.dataset.book = BOOK[style];
+    contour = buildContour();
+    hairDirty = true;
+  }
+
+  /* Zielkontur: äußere Hülle aller Strähnen auf Ziellänge (Polarkoordinaten um den Kopf) */
+  function buildContour() {
+    const BINS = 120, maxR = new Float32Array(BINS);
+    const bin = (x, y) => { let a = Math.atan2(y - HEAD.y, x - HEAD.x); if (a < 0) a += Math.PI * 2; return Math.floor((a / (Math.PI * 2)) * BINS) % BINS; };
+    for (const s of strands) {
+      const kMax = Math.min(s.n, Math.floor(s.T / STEP));
+      for (let k = 0; k <= kMax; k++) {
+        const x = s.pts[k * 2], y = s.pts[k * 2 + 1];
+        const r = Math.hypot(x - HEAD.x, y - HEAD.y), b = bin(x, y);
+        if (r > maxR[b]) maxR[b] = r;
+      }
+      const e = pointAt(s, s.T), b = bin(e[0], e[1]), r = Math.hypot(e[0] - HEAD.x, e[1] - HEAD.y);
+      if (r > maxR[b]) maxR[b] = r;
+    }
+    const pts = [];
+    for (let i = 0; i < BINS; i++) {
+      if (maxR[i] < HEAD.r - 6) { pts.push(null); continue; }
+      const r = (maxR[(i + BINS - 1) % BINS] + 2 * maxR[i] + maxR[(i + 1) % BINS]) / 4 + 2.5;
+      const a = ((i + 0.5) / BINS) * Math.PI * 2;
+      pts.push([HEAD.x + Math.cos(a) * Math.max(r, HEAD.r + 2), HEAD.y + Math.sin(a) * Math.max(r, HEAD.r + 2)]);
+    }
+    return pts;
+  }
+
+  function pointAt(s, len) {
+    const f = Math.min(s.n, len / STEP), k = Math.min(s.n - 1, Math.floor(f)), u = f - k;
+    return [s.pts[k * 2] + (s.pts[k * 2 + 2] - s.pts[k * 2]) * u, s.pts[k * 2 + 1] + (s.pts[k * 2 + 3] - s.pts[k * 2 + 1]) * u];
+  }
+
+  /* ---------- Fortschritt: Nähe zur Zielkontur ---------- */
+  let progress = 0, remain = 1, announced = 0, done = false;
+  function measure() {
+    let wsum = 0, acc = 0, rem = 0;
+    for (const s of strands) {
+      const w = Math.max(1, s.L0 - s.T);
+      wsum += w;
+      let c;
+      if (s.L > s.T + TOL) { const r = (s.L - s.T - TOL) / Math.max(1, s.L0 - s.T - TOL); c = 1 - r; rem += w * r; }
+      else if (s.L >= s.T - TOL) c = 1;
+      else c = 1 - 0.3 * Math.min(1, (s.T - TOL - s.L) / Math.max(8, s.T));   // zu kurz: kleiner Abzug
+      acc += w * c;
+    }
+    return { acc: acc / wsum, remain: rem / wsum };
   }
   function renderProgress() {
-    progress = computeProgress();
-    const p = done ? 100 : Math.min(99, Math.floor(progress * 100));
+    const m = measure();
+    progress = m.acc; remain = m.remain;
+    const p = Math.max(0, Math.min(100, Math.round(progress * 100)));
     pctEl.textContent = `${p}\u00a0%`;
     barEl.style.transform = `scaleX(${p / 100})`;
     const step = Math.floor(p / 25) * 25;
-    if (step > announced && !done) { announced = step; liveEl.textContent = `Schnitt ${p} Prozent`; }
-    if (!done && progress >= 0.93) finish();
+    if (step > announced && !done) { announced = step; liveEl.textContent = `Schnitt ${p} Prozent an der Zielkontur`; }
+    if (!done && remain <= 0.07) finish();
   }
 
-  /* ---------- Fallende und liegende Strähnen ---------- */
+  /* ---------- Fallende und liegende Stücke ---------- */
   const falling = [];
   const settled = [];
-  function spawnPiece(s, fromL, vx) {
-    // Punkte des abgeschnittenen Stücks (fromL .. s.L)
+  function spawnPiece(s, fromL, toL, vx) {
     const out = [];
-    const i0 = fromL / s.step, i1 = s.L / s.step;
-    const push = (t) => {
-      const k = Math.min(SEG - 1, Math.floor(t)), f = t - k;
-      out.push(s.pts[k * 2] + (s.pts[k * 2 + 2] - s.pts[k * 2]) * f, s.pts[k * 2 + 1] + (s.pts[k * 2 + 3] - s.pts[k * 2 + 1]) * f);
-    };
-    push(i0);
-    for (let k = Math.ceil(i0 + 0.001); k < i1; k++) push(k);
-    push(i1);
-    if (out.length < 4) return;
+    const a = pointAt(s, fromL); out.push(a[0], a[1]);
+    for (let k = Math.floor(fromL / STEP) + 1; k * STEP < toL && k <= s.n; k++) out.push(s.pts[k * 2], s.pts[k * 2 + 1]);
+    const b = pointAt(s, toL); out.push(b[0], b[1]);
+    if (out.length < 4 || toL - fromL < 0.8) return;
     let cx = 0, cy = 0; const n = out.length / 2;
     for (let k = 0; k < out.length; k += 2) { cx += out[k]; cy += out[k + 1]; }
     cx /= n; cy /= n;
     for (let k = 0; k < out.length; k += 2) { out[k] -= cx; out[k + 1] -= cy; }
-    const piece = { pts: out, x: cx, y: cy, vx: (vx || 0) * 0.15 + (Math.random() - 0.5) * 70, vy: -20 - Math.random() * 60, a: 0, va: (Math.random() - 0.5) * 3, tone: s.tone };
-    if (reduce || falling.length > 260) settle(piece); else falling.push(piece);
+    const p = { pts: out, x: cx, y: cy, vx: (vx || 0) * 0.08 + (Math.random() - 0.5) * 50, vy: -10 - Math.random() * 40, a: 0, va: (Math.random() - 0.5) * 2.4, hi: s.hi, len: toL - fromL };
+    if (reduce || falling.length > 320) settle(p); else falling.push(p);
   }
   function settle(p) {
-    p.y = FLOOR - 2 - Math.random() * 5;
-    p.x = Math.max(380, Math.min(900, p.x + (reduce ? 0 : (Math.random() - 0.5) * 30)));
+    p.y = FLOOR - 2 - Math.random() * 4;
+    p.x = Math.max(380, Math.min(900, p.x + (reduce ? 0 : (Math.random() - 0.5) * 24)));
     settled.push(p);
-    if (settled.length > 900) settled.splice(0, settled.length - 900);
+    if (settled.length > 1400) settled.splice(0, settled.length - 1400);
     drawSettled(p);
   }
 
-  /* ---------- Schneiden ---------- */
-  function cutAlong(ax, ay, bx, by, radius, vx) {
-    const dx = bx - ax, dy = by - ay, dd = dx * dx + dy * dy || 1;
-    const r2 = radius * radius;
+  /* ---------- Exakter Schnitt: Segment (Scherenweg) gegen Segmente der Strähne ---------- */
+  function segHit(ax, ay, bx, by, cx, cy, dx, dy) {
+    const rx = bx - ax, ry = by - ay, sx = dx - cx, sy = dy - cy;
+    const den = rx * sy - ry * sx;
+    if (Math.abs(den) < 1e-9) return -1;
+    const qx = cx - ax, qy = cy - ay;
+    const t = (qx * sy - qy * sx) / den;     // auf dem Scherenweg
+    const u = (qx * ry - qy * rx) / den;     // auf der Strähne
+    return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? u : -1;
+  }
+  let cutCount = 0;
+  function cutLine(ax, ay, bx, by, vx) {
+    if (Math.hypot(bx - ax, by - ay) < 0.3) return false;
     let any = false;
     for (const s of strands) {
-      if (s.L <= s.T + 0.5) continue;
-      const kMax = Math.min(SEG, Math.floor(s.L / s.step));
-      for (let k = 1; k <= kMax; k++) {
-        const px = s.pts[k * 2], py = s.pts[k * 2 + 1];
-        let t = ((px - ax) * dx + (py - ay) * dy) / dd; t = t < 0 ? 0 : t > 1 ? 1 : t;
-        const qx = ax + dx * t - px, qy = ay + dy * t - py;
-        if (qx * qx + qy * qy < r2) {
-          const newL = Math.max(s.T, (k - 0.5) * s.step);
-          if (newL < s.L - 1.5) { spawnPiece(s, newL, vx); s.L = newL; any = true; }
-          break;
+      if (s.L <= MINL + 0.5) continue;
+      const segs = Math.min(s.n, Math.ceil(s.L / STEP));
+      for (let k = 0; k < segs; k++) {
+        const segLen = Math.min(STEP, s.L - k * STEP);
+        if (segLen <= 0) break;
+        const x1 = s.pts[k * 2], y1 = s.pts[k * 2 + 1];
+        let x2 = s.pts[k * 2 + 2], y2 = s.pts[k * 2 + 3];
+        if (segLen < STEP) { x2 = x1 + (x2 - x1) * (segLen / STEP); y2 = y1 + (y2 - y1) * (segLen / STEP); }
+        const u = segHit(ax, ay, bx, by, x1, y1, x2, y2);
+        if (u >= 0) {
+          const at = Math.max(MINL, k * STEP + u * segLen);
+          if (at < s.L - 0.6) { spawnPiece(s, at, s.L, vx); s.L = at; any = true; cutCount++; }
+          break;                           // nur der erste Treffer ab der Wurzel zählt
         }
       }
     }
-    if (any) { snipUntil = now() + 140; renderProgress(); dirty = true; }
+    if (any) { snipAt = now(); hairDirty = true; renderProgress(); }
     return any;
   }
-  function cutStrandToTarget(s) { if (s.L > s.T + 0.5) { spawnPiece(s, s.T, 0); s.L = s.T; } }
+  function cutStrandTo(s, len) { if (s.L > len + 0.5) { spawnPiece(s, len, s.L, 0); s.L = len; hairDirty = true; } }
 
   /* ---------- Zustand Schere/Arm ---------- */
   const now = () => performance.now();
-  const tip = { x: REST.x, y: REST.y };          // tatsächliche Schneidspitze (geglättet)
-  const aim = { x: REST.x, y: REST.y };          // Ziel (Zeiger oder Ruhe)
-  let pointerIn = false, snipUntil = 0, dirty = true, started = false;
-  let auto = null;                               // automatischer Schnittdurchgang (Tastatur/Button)
-  let regrow = null;                             // Nachwachsen
+  const tip = { x: REST.x, y: REST.y };
+  const aim = { x: REST.x, y: REST.y };
+  let pointerIn = false, pressing = false, snipAt = -1e9, hairDirty = true, dirty = true, started = false;
+  let auto = null, regrow = null;
 
   function clampReach(p) {
     const dx = p.x - SHOULDER.x, dy = p.y - SHOULDER.y, d = Math.hypot(dx, dy);
-    if (d > REACH) { p.x = SHOULDER.x + dx / d * REACH; p.y = SHOULDER.y + dy / d * REACH; }
+    if (d > REACH) { p.x = SHOULDER.x + (dx / d) * REACH; p.y = SHOULDER.y + (dy / d) * REACH; }
     if (p.y > FLOOR - 20) p.y = FLOOR - 20;
     return p;
   }
 
-  /* ---------- Größe & Pixeldichte ---------- */
-  let scale = 1, dpr = 1, cssW = 0, cssH = 0;
+  /* ---------- Ausschnitt, Größe, Pixeldichte ---------- */
+  // Mobil: näher an Kopf und Schere heran, damit man mit dem Finger präzise schneiden kann
+  const VIEW_DESK = { x: 0, y: 90, w: 1000, h: 810 };
+  const VIEW_MOB = { x: 150, y: 58, w: 688, h: 796 };
+  let view = VIEW_DESK, scale = 1, dpr = 1, cssW = 0, cssH = 0, ox = 0, oy = 0;
   const bg = document.createElement('canvas');
+  const hairC = document.createElement('canvas');
   const floorC = document.createElement('canvas');
   function resize() {
     const r = stage.getBoundingClientRect();
     if (!r.width) return;
+    view = mqMobile.matches ? VIEW_MOB : VIEW_DESK;
     cssW = r.width; cssH = r.height;
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    scale = Math.min(cssW / W, cssH / (H - TOP));
-    for (const c of [canvas, bg, floorC]) { c.width = Math.round(cssW * dpr); c.height = Math.round(cssH * dpr); }
+    scale = Math.min(cssW / view.w, cssH / view.h);
+    ox = (cssW - view.w * scale) / 2 - view.x * scale;
+    oy = cssH - view.h * scale - view.y * scale;
+    for (const c of [canvas, bg, hairC, floorC]) { c.width = Math.round(cssW * dpr); c.height = Math.round(cssH * dpr); }
     drawStatic();
     floorC.getContext('2d').clearRect(0, 0, floorC.width, floorC.height);
     for (const p of settled) drawSettled(p);
-    dirty = true;
+    hairDirty = true; dirty = true;
   }
-  // Szene zentriert in die Bühne setzen
-  function sceneTransform(c) {
-    const ox = (cssW - W * scale) / 2, oy = (cssH - H * scale);
-    c.setTransform(dpr * scale, 0, 0, dpr * scale, ox * dpr, oy * dpr);
-  }
+  function sceneTransform(c) { c.setTransform(dpr * scale, 0, 0, dpr * scale, ox * dpr, oy * dpr); }
   function toScene(clientX, clientY) {
     const r = canvas.getBoundingClientRect();
-    const ox = (cssW - W * scale) / 2, oy = (cssH - H * scale);
     return { x: (clientX - r.left - ox) / scale, y: (clientY - r.top - oy) / scale };
   }
   const lw = (v) => Math.max(v, 0.9 / scale);
@@ -340,135 +458,137 @@
     c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
   }
 
-  function piecePath(c, p) {
-    c.beginPath();
-    c.moveTo(p.pts[0], p.pts[1]);
-    for (let k = 2; k < p.pts.length; k += 2) c.lineTo(p.pts[k], p.pts[k + 1]);
+
+  /* ---------- Haarebene (gecacht, nur nach einem Schnitt neu) ---------- */
+  function strandPath(c, s) {
+    const n = s.L / STEP, kMax = Math.min(s.n, Math.floor(n));
+    c.moveTo(s.pts[0], s.pts[1]);
+    for (let k = 1; k <= kMax; k++) c.lineTo(s.pts[k * 2], s.pts[k * 2 + 1]);
+    if (kMax < s.n && n > kMax) { const p = pointAt(s, s.L); c.lineTo(p[0], p[1]); }
+  }
+  function drawHair() {
+    const c = hairC.getContext('2d');
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.clearRect(0, 0, hairC.width, hairC.height);
+    sceneTransform(c);
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    // 0) Kopfhaut mit Stoppeln
+    if (capImg) { c.imageSmoothingEnabled = true; c.drawImage(capImg.cv, capImg.x, capImg.y, HEAD.r * 2, HEAD.r * 2); }
+    // 1) Volumen: kurze Haare fein, lange voll
+    c.strokeStyle = INK;
+    for (const [lo, hi, w] of [[0, 6, 1.3], [6, 14, 2.3], [14, 1e9, 3.4]]) {
+      c.lineWidth = w; c.beginPath();
+      for (const s of strands) if (s.L > lo && s.L <= hi) strandPath(c, s);
+      c.stroke();
+    }
+    // 2) Strähnenzeichnung
+    c.strokeStyle = NIGHT; c.lineWidth = lw(0.7);
+    c.beginPath(); for (const s of strands) if (s.L > 6) strandPath(c, s); c.stroke();
+    // 3) Glanzlinien
+    c.strokeStyle = IRON; c.lineWidth = lw(0.6);
+    c.beginPath(); for (const s of strands) if (s.hi && s.L > 14) strandPath(c, s); c.stroke();
+    // Zielkontur, dezent gestrichelt
+    if (!done && contour) {
+      c.strokeStyle = 'rgba(74,74,74,.65)'; c.lineWidth = lw(1); c.setLineDash([3, 4]);
+      c.beginPath();
+      let pen = false;
+      for (const p of contour) { if (!p) { pen = false; continue; } if (!pen) { c.moveTo(p[0], p[1]); pen = true; } else c.lineTo(p[0], p[1]); }
+      c.stroke(); c.setLineDash([]);
+    }
+    hairDirty = false;
+  }
+  function piecePath(c, p) { c.beginPath(); c.moveTo(p.pts[0], p.pts[1]); for (let k = 2; k < p.pts.length; k += 2) c.lineTo(p.pts[k], p.pts[k + 1]); }
+  function strokePiece(c, p) {
+    c.strokeStyle = INK; c.lineWidth = 3.4; piecePath(c, p); c.stroke();
+    c.strokeStyle = p.hi ? IRON : NIGHT; c.lineWidth = lw(0.9); piecePath(c, p); c.stroke();
   }
   function drawSettled(p) {
     const c = floorC.getContext('2d');
     sceneTransform(c);
-    c.save();
-    c.translate(p.x, p.y); c.scale(1, 0.22); c.rotate(p.a);
-    c.strokeStyle = p.tone ? COAL : INK; c.lineWidth = lw(1.3); c.lineCap = 'round';
-    piecePath(c, p); c.stroke();
-    c.restore();
+    c.save(); c.lineCap = 'round'; c.translate(p.x, p.y); c.scale(1, 0.2); c.rotate(p.a);
+    strokePiece(c, p); c.restore();
   }
 
   /* ---------- Frame ---------- */
-  let t0 = now(), last = t0;
+  let last = now(), t0 = last;
   function frame(tms) {
     raf = 0;
     if (!visible) return;
     const dt = Math.min(0.05, (tms - last) / 1000); last = tms;
-    const t = (tms - t0) / 1000;
     let active = false;
 
-    // Automatischer Durchgang: Schere läuft am Kopf entlang
     if (auto) {
       const p = auto.dur ? Math.min(1, (tms - auto.start) / auto.dur) : 1;
-      const u = auto.u0 + (auto.u1 - auto.u0) * p;
-      const a = angleAt(u);
-      const rr = HEAD.r + 22;
-      aim.x = HEAD.x + Math.cos(a) * rr; aim.y = HEAD.y + Math.sin(a) * rr;
-      for (const s of strands) if (s.u >= auto.u0 && s.u <= u) cutStrandToTarget(s);
-      snipUntil = tms + 120;
+      const e = p * p * (3 - 2 * p);
+      const idx = Math.floor(e * (auto.list.length - 1));
+      for (let i = auto.done; i <= idx; i++) cutStrandTo(auto.list[i], auto.list[i].T);
+      auto.done = idx + 1;
+      const cur = auto.list[Math.min(idx, auto.list.length - 1)];
+      if (cur) { const q = pointAt(cur, cur.T); aim.x = q[0]; aim.y = q[1]; }
+      snipAt = tms;
       renderProgress();
       if (p >= 1) { const next = auto.next; auto = null; if (next) next(); }
       active = true;
     } else if (!pointerIn) { aim.x = REST.x; aim.y = REST.y; }
 
-    // Nachwachsen
     if (regrow) {
       const p = regrow.dur ? Math.min(1, (tms - regrow.start) / regrow.dur) : 1;
       const e = 1 - Math.pow(1 - p, 3);
       for (const s of strands) s.L = s.from + (s.L0 - s.from) * e;
+      hairDirty = true;
       if (p >= 1) { regrow = null; renderProgress(); }
       active = true;
     }
 
-    // Schere folgt (gefedert); bei reduzierter Bewegung direkt
-    const k = reduce ? 1 : 1 - Math.pow(0.0008, dt);
-    const tx = tip.x + (aim.x - tip.x) * k, ty = tip.y + (aim.y - tip.y) * k;
-    if (Math.abs(tx - tip.x) + Math.abs(ty - tip.y) > 0.05) active = true;
-    tip.x = tx; tip.y = ty; clampReach(tip);
+    // Beim Schneiden sitzt die Schere exakt am Zeiger, sonst gefedert
+    if (pressing) { tip.x = aim.x; tip.y = aim.y; }
+    else {
+      const k = reduce ? 1 : 1 - Math.pow(0.0006, dt);
+      const nx = tip.x + (aim.x - tip.x) * k, ny = tip.y + (aim.y - tip.y) * k;
+      if (Math.abs(nx - tip.x) + Math.abs(ny - tip.y) > 0.05) active = true;
+      tip.x = nx; tip.y = ny;
+    }
 
-    // Fallende Strähnen
     if (falling.length) {
       active = true;
       for (let i = falling.length - 1; i >= 0; i--) {
         const p = falling[i];
-        p.vy += 900 * dt; p.vx *= 0.985; p.vy *= 0.992;
+        p.vy += 820 * dt; p.vx *= 0.985; p.vy *= 0.993;
         p.x += p.vx * dt; p.y += p.vy * dt; p.a += p.va * dt;
         if (p.y >= FLOOR - 4) { falling.splice(i, 1); settle(p); }
       }
     }
+    const snipping = tms - snipAt < 160;
+    const idleSnip = !reduce && !pointerIn && !auto && ((tms - t0) / 1000) % 3.4 < 0.4;
+    if (snipping || idleSnip) active = true;
 
-    if (active || dirty || !reduce) draw(t, tms);
+    if (hairDirty) drawHair();
+    if (active || dirty) draw(tms);
     dirty = false;
-    if (!reduce || active) schedule();
+    if (active || !reduce) schedule();
   }
 
-  function draw(t, tms) {
+  function draw(tms) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(bg, 0, 0);
     ctx.drawImage(floorC, 0, 0);
+    ctx.drawImage(hairC, 0, 0);
     sceneTransform(ctx);
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-
-    // Haare: zwei Tonstufen, je ein Pfad
-    const sway = reduce ? 0 : 1;
-    for (const tone of [true, false]) {
-      ctx.beginPath();
-      for (const s of strands) {
-        if (s.tone !== tone) continue;
-        const n = s.L / s.step;
-        const kMax = Math.min(SEG, Math.floor(n));
-        const sw = sway * Math.sin(t * 1.3 + s.phase) * 0.9;
-        ctx.moveTo(s.pts[0], s.pts[1]);
-        for (let k = 1; k <= kMax; k++) {
-          const off = sw * (k * s.step / 60) * (k * s.step / 60);
-          ctx.lineTo(s.pts[k * 2] + off, s.pts[k * 2 + 1]);
-        }
-        if (kMax < SEG && n > kMax) {
-          const f = n - kMax, i = kMax * 2;
-          const off = sw * (n * s.step / 60) * (n * s.step / 60);
-          ctx.lineTo(s.pts[i] + (s.pts[i + 2] - s.pts[i]) * f + off, s.pts[i + 1] + (s.pts[i + 3] - s.pts[i + 1]) * f);
-        }
-      }
-      ctx.strokeStyle = tone ? COAL : INK;
-      ctx.lineWidth = lw(tone ? 1.1 : 1.4);
-      ctx.stroke();
-    }
-
-    // Fallende Strähnen
-    if (falling.length) {
-      ctx.strokeStyle = INK; ctx.lineWidth = lw(1.3);
-      for (const p of falling) {
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); piecePath(ctx, p); ctx.stroke(); ctx.restore();
-      }
-    }
-
-    // Dampf über dem Kaffee
+    for (const p of falling) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); strokePiece(ctx, p); ctx.restore(); }
     if (!reduce) {
-      ctx.strokeStyle = ASH; ctx.lineWidth = lw(1);
-      ctx.globalAlpha = 0.55 + Math.sin(t * 1.7) * 0.25;
+      const t = (tms - t0) / 1000;
+      ctx.strokeStyle = ASH; ctx.lineWidth = lw(1); ctx.globalAlpha = 0.55 + Math.sin(t * 1.7) * 0.25;
       ctx.beginPath();
-      for (const x0 of [906, 917]) {
-        const ph = x0 * 0.1;
-        ctx.moveTo(x0, 608);
-        ctx.bezierCurveTo(x0 + 6 * Math.sin(t * 1.6 + ph), 596, x0 - 6 * Math.sin(t * 1.6 + ph), 586, x0 + 3 * Math.sin(t + ph), 574);
-      }
-      ctx.stroke();
-      ctx.globalAlpha = 1;
+      for (const x0 of [906, 917]) { const ph = x0 * 0.1; ctx.moveTo(x0, 608); ctx.bezierCurveTo(x0 + 6 * Math.sin(t * 1.6 + ph), 596, x0 - 6 * Math.sin(t * 1.6 + ph), 586, x0 + 3 * Math.sin(t + ph), 574); }
+      ctx.stroke(); ctx.globalAlpha = 1;
     }
-
-    drawArm(t, tms);
+    drawArm(tms);
   }
 
-  // Buraks Arm (2-Gelenk-IK, Ellbogen nach unten) und goldene Schere
-  function drawArm(t, tms) {
+  // Buraks Arm (2-Gelenk-IK, Ellbogen unten) und goldene Schere; Spitze = Schneidpunkt
+  function drawArm(tms) {
     let dx = tip.x - SHOULDER.x, dy = tip.y - SHOULDER.y;
     const dTip = Math.hypot(dx, dy) || 1;
     const ux = dx / dTip, uy = dy / dTip;
@@ -478,24 +598,20 @@
     const base = Math.atan2(dy, dx);
     const off = Math.acos(Math.max(-1, Math.min(1, (UPPER * UPPER + D * D - FORE * FORE) / (2 * UPPER * D))));
     const ex = SHOULDER.x + Math.cos(base + off) * UPPER, ey = SHOULDER.y + Math.sin(base + off) * UPPER;
-
+    const ax = SHOULDER.x + Math.cos(base) * D, ay = SHOULDER.y + Math.sin(base) * D; // Hand (falls außer Reichweite)
     ctx.strokeStyle = NIGHT;
-    ctx.lineWidth = 30;
-    ctx.beginPath(); ctx.moveTo(SHOULDER.x, SHOULDER.y); ctx.lineTo(ex, ey); ctx.stroke();
-    ctx.lineWidth = 23;
-    ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(hx, hy); ctx.stroke();
-    ctx.fillStyle = NIGHT;
-    ctx.beginPath(); ctx.arc(hx, hy, 14, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 30; ctx.beginPath(); ctx.moveTo(SHOULDER.x, SHOULDER.y); ctx.lineTo(ex, ey); ctx.stroke();
+    ctx.lineWidth = 23; ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ax, ay); ctx.stroke();
+    ctx.fillStyle = NIGHT; ctx.beginPath(); ctx.arc(ax, ay, 14, 0, Math.PI * 2); ctx.fill();
 
-    // Öffnung: schnippt beim Schneiden, sonst ruhig leicht offen; im Leerlauf ab und zu ein Schnipp
-    let open = 0.22;
-    if (!reduce) {
-      if (tms < snipUntil) open = 0.06 + Math.abs(Math.sin(tms / 38)) * 0.32;
-      else if (!pointerIn && !auto) { const c = (t % 3.2); if (c < 0.36) open = 0.06 + Math.abs(Math.sin(c * 17.5)) * 0.24; }
-    }
-    const px = -uy, py = ux;                      // Senkrechte
-    const pvx = hx + ux * 18, pvy = hy + uy * 18; // Drehpunkt
-    const len = SCISSOR - 18 + 4;
+    // Öffnung: offen beim Zielen, schließt bei jedem Schnitt kurz („Schnipp“)
+    let open = pressing ? 0.3 : 0.2;
+    const since = tms - snipAt;
+    if (since < 160) open = reduce ? 0.04 : 0.04 + (since / 160) * 0.26;
+    else if (!reduce && !pointerIn && !auto) { const c = ((tms - t0) / 1000) % 3.4; if (c < 0.4) open = 0.05 + Math.abs(Math.sin(c * 15.7)) * 0.2; }
+    const px = -uy, py = ux;
+    const pvx = tip.x - ux * (SCISSOR - 18), pvy = tip.y - uy * (SCISSOR - 18);
+    const len = SCISSOR - 18;
     ctx.fillStyle = GOLD; ctx.strokeStyle = GOLD; ctx.lineWidth = lw(2);
     for (const sgn of [1, -1]) {
       const ang = Math.atan2(uy, ux) + sgn * open;
@@ -505,6 +621,11 @@
       ctx.beginPath(); ctx.arc(hx - ux * 2 + px * sgn * 8, hy - uy * 2 + py * sgn * 8, 6.5, 0, Math.PI * 2); ctx.stroke();
     }
     ctx.fillStyle = NIGHT; ctx.beginPath(); ctx.arc(pvx, pvy, 2.2, 0, Math.PI * 2); ctx.fill();
+    // feines Fadenkreuz am Schneidpunkt, solange gezielt wird
+    if (pointerIn && !auto) {
+      ctx.strokeStyle = pressing ? NIGHT : IRON; ctx.lineWidth = lw(1); ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.arc(tip.x, tip.y, 4, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+    }
   }
 
   /* ---------- Schleife nur bei Sichtbarkeit ---------- */
@@ -512,97 +633,102 @@
   function schedule() { if (!raf && visible) raf = requestAnimationFrame(frame); }
   function kick() { dirty = true; last = now(); schedule(); }
 
-  /* ---------- Eingabe: Pointer Events ---------- */
+  /* ---------- Eingabe: Pointer Events (schneidet nur gedrückt) ---------- */
   let lastP = null, lastT = 0, activeId = null;
   function markStarted() { if (!started) { started = true; stage.classList.add('is-playing'); } }
+  function scenePoint(e) { return toScene(e.clientX, e.clientY); }
   stage.addEventListener('pointerdown', (e) => {
-    if (done || regrow) return;
-    activeId = e.pointerId;
-    if (e.pointerType !== 'mouse') { try { stage.setPointerCapture(e.pointerId); } catch (_) { /* egal */ } }
-    pointerIn = true;
-    const p = clampReach(toScene(e.clientX, e.clientY));
-    aim.x = p.x; aim.y = p.y; lastP = p; lastT = e.timeStamp;
-    if (e.pointerType !== 'mouse') e.preventDefault();
+    if (e.button !== undefined && e.button > 0) return;
+    if (done || regrow || auto) return;
+    activeId = e.pointerId; pressing = true; pointerIn = true;
+    try { stage.setPointerCapture(e.pointerId); } catch (_) { /* egal */ }
+    const p = scenePoint(e);
+    aim.x = p.x; aim.y = p.y; tip.x = p.x; tip.y = p.y;
+    lastP = p; lastT = e.timeStamp; snipAt = now();
+    markStarted();
+    e.preventDefault();
     kick();
   });
   stage.addEventListener('pointermove', (e) => {
     if (e.pointerType !== 'mouse' && e.pointerId !== activeId) return;
     pointerIn = true;
-    const p = clampReach(toScene(e.clientX, e.clientY));
-    aim.x = p.x; aim.y = p.y;
-    if (!done && !regrow && !auto && lastP) {
-      const dtv = Math.max(1, e.timeStamp - lastT);
-      const vx = (p.x - lastP.x) / dtv * 1000;
-      if (cutAlong(lastP.x, lastP.y, p.x, p.y, e.pointerType === 'mouse' ? 24 : 34, vx)) markStarted();
+    // zusammengefasste Events nutzen, damit schnelle Bewegungen lückenlos schneiden
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    const list = evs.length ? evs : [e];
+    for (const ce of list) {
+      const p = scenePoint(ce);
+      if (pressing && !done && !regrow && !auto && lastP) {
+        const dtv = Math.max(1, ce.timeStamp - lastT);
+        cutLine(lastP.x, lastP.y, p.x, p.y, ((p.x - lastP.x) / dtv) * 1000);
+      }
+      lastP = p; lastT = ce.timeStamp;
+      aim.x = p.x; aim.y = p.y;
     }
-    lastP = p; lastT = e.timeStamp;
     kick();
   });
-  const leave = (e) => {
-    if (e.pointerType !== 'mouse' && e.pointerId !== activeId) return;
-    if (e.pointerType !== 'mouse' || e.type === 'pointerleave') { pointerIn = false; lastP = null; activeId = null; }
+  const release = (e) => {
+    if (e.pointerId !== activeId && e.type !== 'pointerleave') return;
+    if (e.type === 'pointerleave' && pressing && e.pointerType === 'mouse') return; // Capture hält den Schnitt
+    pressing = false;
+    if (e.pointerType !== 'mouse' || e.type === 'pointerleave') { pointerIn = false; lastP = null; }
+    if (e.type !== 'pointerleave') activeId = null;
     kick();
   };
-  stage.addEventListener('pointerup', leave);
-  stage.addEventListener('pointercancel', leave);
-  stage.addEventListener('pointerleave', leave);
+  stage.addEventListener('pointerup', release);
+  stage.addEventListener('pointercancel', release);
+  stage.addEventListener('pointerleave', (e) => { if (!pressing) { pointerIn = false; lastP = null; kick(); } });
+  stage.addEventListener('contextmenu', (e) => e.preventDefault());
 
-  /* ---------- Tastatur & Buttons ---------- */
-  const PASSES = 7;
+  /* ---------- Tastatur & Buttons: Burak schneidet abschnittsweise exakt auf Kontur ---------- */
+  const PASSES = 6;
+  let keyboardUsed = false;
   function cutPass() {
     if (done || regrow || auto) return;
     markStarted();
-    // nächsten Abschnitt mit ungeschnittenen Strähnen suchen
     for (let i = 0; i < PASSES; i++) {
-      const u0 = i / PASSES, u1 = (i + 1) / PASSES;
-      if (strands.some((s) => s.u >= u0 && s.u <= u1 && s.L > s.T + 0.5)) {
-        auto = { u0, u1, start: now(), dur: reduce ? 0 : 650 };
-        kick();
-        return;
-      }
+      const lo = 1 - (i + 1) / PASSES, hi = 1 - i / PASSES;   // von oben nach unten
+      const list = strands.filter((s) => s.t >= lo - 1e-6 && s.t <= hi + 1e-6 && s.L > s.T + 0.5).sort((a, b) => a.pts[0] - b.pts[0]);
+      if (list.length) { auto = { list, done: 0, start: now(), dur: reduce ? 0 : 700 }; kick(); return; }
     }
   }
-  stage.addEventListener('keydown', (e) => {
-    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); keyboardUsed = true; cutPass(); }
-  });
-  let keyboardUsed = false;
+  stage.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); keyboardUsed = true; cutPass(); } });
   game.querySelector('[data-game-cut]').addEventListener('click', (e) => { keyboardUsed = e.detail === 0; cutPass(); });
   game.querySelector('[data-game-reset]').addEventListener('click', () => reset());
   game.querySelector('[data-game-again]').addEventListener('click', () => { reset(); stage.focus({ preventScroll: true }); });
   game.querySelectorAll('input[name="game-style"]').forEach((r) => r.addEventListener('change', () => {
     if (!r.checked) return;
     style = r.value;
-    const cut = strands.some((s) => s.L < s.L0 - 0.5);
-    if (cut || done) reset(); else { applyStyle(); renderProgress(); }
+    if (done || strands.some((s) => s.L < s.L0 - 0.5)) reset(); else { applyStyle(); renderProgress(); kick(); }
   }));
 
   function finish() {
     if (done) return;
     done = true;
-    // Feinschliff: Rest sauber auf Ziellänge
     const run = () => {
-      for (const s of strands) cutStrandToTarget(s);
-      snipUntil = now() + 300;
+      const acc = Math.round(measure().acc * 100);
+      for (const s of strands) if (s.L > s.T + TOL) cutStrandTo(s, s.T);   // Burak macht den Feinschliff
+      snipAt = now();
+      hairDirty = true;
       renderProgress();
-      liveEl.textContent = 'Schnitt 100 Prozent. Sitzt. Jetzt das Original buchen.';
-      actionsEl.hidden = true;
-      doneEl.hidden = false;
+      pctEl.textContent = `${acc}\u00a0%`; barEl.style.transform = `scaleX(${acc / 100})`;
+      if (doneText) doneText.textContent = `${LABEL[style]} sitzt, ${acc} % an der Zielkontur. Jetzt das Original buchen.`;
+      liveEl.textContent = `Fertig. ${LABEL[style]} sitzt, ${acc} Prozent an der Zielkontur. Jetzt das Original buchen.`;
+      actionsEl.hidden = true; doneEl.hidden = false;
       if (keyboardUsed) doneTitle.focus({ preventScroll: true });
       kick();
     };
-    if (auto) { const a = auto; a.next = run; } else run();
+    if (auto) auto.next = run; else run();
   }
 
   function reset() {
-    done = false; announced = 0; auto = null;
+    done = false; announced = 0; auto = null; cutCount = 0;
     for (const s of strands) s.from = s.L;
     applyStyle();
     falling.length = 0; settled.length = 0;
     floorC.getContext('2d').clearRect(0, 0, floorC.width, floorC.height);
     regrow = { start: now(), dur: reduce ? 0 : 1100 };
     doneEl.hidden = true; actionsEl.hidden = false;
-    liveEl.textContent = 'Die Haare sind nachgewachsen. Schnitt 0 Prozent.';
-    pctEl.textContent = '0\u00a0%'; barEl.style.transform = 'scaleX(0)';
+    liveEl.textContent = `Die Haare sind nachgewachsen. Ziel: ${LABEL[style]}.`;
     kick();
   }
 
@@ -612,22 +738,23 @@
   const io = new IntersectionObserver((entries) => {
     visible = entries[0].isIntersecting && !document.hidden;
     if (visible) {
-      if (firstView) {
-        firstView = false;
-        // Auftritt: die Haare „wachsen“ einmal kurz heran
-        if (!reduce) { for (const s of strands) s.from = s.exit; regrow = { start: now(), dur: 1400 }; }
-      }
+      if (firstView) { firstView = false; if (!reduce) { for (const s of strands) s.from = Math.min(s.L0, 6); regrow = { start: now(), dur: 1300 }; } }
       kick();
     }
   }, { rootMargin: '120px 0px' });
   io.observe(stage);
-  document.addEventListener('visibilitychange', () => { visible = !document.hidden && stage.getBoundingClientRect().bottom > 0 && stage.getBoundingClientRect().top < window.innerHeight; if (visible) kick(); });
+  document.addEventListener('visibilitychange', () => { const r = stage.getBoundingClientRect(); visible = !document.hidden && r.bottom > 0 && r.top < window.innerHeight; if (visible) kick(); });
   if ('ResizeObserver' in window) new ResizeObserver(() => { resize(); kick(); }).observe(stage);
   else window.addEventListener('resize', () => { resize(); kick(); });
   resize();
   renderProgress();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { drawStatic(); kick(); });
 
-  // Für QA/Tests: aktueller Stand
-  window.__brkGame = { get progress() { return progress; }, get done() { return done; } };
+  // Für QA: Zustand und Szene-Umrechnung
+  window.__brkGame = {
+    get progress() { return progress; }, get remain() { return remain; }, get done() { return done; }, get cuts() { return cutCount; },
+    toClient(x, y) { const r = canvas.getBoundingClientRect(); return { x: r.left + ox + x * scale, y: r.top + oy + y * scale }; },
+    strands: () => strands.map((s) => ({ L: s.L, T: s.T, L0: s.L0 })),
+    endpoints: () => strands.filter((s) => s.L < s.L0 - 0.5).map((s) => [...pointAt(s, s.L), s.L]),
+  };
 })();
