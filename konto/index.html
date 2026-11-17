@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kundenkonto – BRK Studio Köln</title>
+  <meta name="description" content="Deine Termine bei BRK Studio verwalten.">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <script src="../assets/js/boot.js"></script>
+</head>
+<body class="app">
+  <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
+  <div class="demo-bar" role="note">
+    <div class="wrap demo-bar__in">
+      <p><span class="demo-flag__dot" aria-hidden="true"></span><strong>Demo-Plattform.</strong> <span class="demo-bar__more">Alle Daten bleiben in diesem Browser. Einträge mit „Beispiel“ sind Beispieldaten.</span></p>
+      <button type="button" class="demo-bar__reset" data-demo-reset>Demo zurücksetzen</button>
+    </div>
+  </div>
+  <header class="app-header">
+    <div class="wrap app-header__in">
+      <a href="../" class="brand" aria-label="BRK Studio – zur Website"><img src="../assets/img/logo-light.svg" width="200" height="104" alt="BRK Studio Köln"></a>
+      <nav class="app-nav" aria-label="Plattform">
+        <a href="../" class="app-nav__site">Website</a>
+        <a href="../buchen/">Buchen</a>
+        <a href="../konto/" data-account-link data-admin="../admin/" aria-current="page">Anmelden</a>
+      </nav>
+    </div>
+  </header>
+  <main id="inhalt" class="acc" data-acc>
+    <section class="auth" data-acc-auth hidden aria-labelledby="auth-title">
+      <figure class="auth__visual">
+        <img src="../assets/img/real-salon-1600.webp" srcset="../assets/img/real-salon-900.webp 900w, ../assets/img/real-salon-1600.webp 1600w" sizes="(min-width: 1024px) 50vw, 100vw" width="1600" height="1200" alt="Innenraum von BRK Studio am Neumarkt" decoding="async">
+        <figcaption class="auth__quote">„Wie im Wohnzimmer.“<span>BRK Studio, Neumarkt Köln</span></figcaption>
+      </figure>
+      <div class="auth__panel">
+        <p class="eyebrow">Kundenkonto</p>
+        <h1 id="auth-title" class="auth__title">Schön, dass du da bist.</h1>
+        <p class="auth__lede">Termine ansehen, verschieben, stornieren und nach dem Besuch bewerten.</p>
+        <div data-auth-forms></div>
+      </div>
+    </section>
+
+    <section class="acc-app" data-acc-app hidden>
+      <div class="app-hero app-hero--compact">
+        <div class="wrap app-hero__in app-hero__in--row">
+          <div>
+            <p class="eyebrow eyebrow--light">Kundenkonto</p>
+            <h1 class="app-hero__title" data-hello>Hallo.</h1>
+          </div>
+          <a class="btn btn-light btn-sm" href="../buchen/">Neuen Termin buchen</a>
+        </div>
+      </div>
+      <div class="wrap">
+        <nav class="subnav" aria-label="Konto">
+          <a href="#termine" data-view-link="termine">Termine</a>
+          <a href="#bewertungen" data-view-link="bewertungen">Bewertungen</a>
+          <a href="#profil" data-view-link="profil">Profil</a>
+        </nav>
+        <div data-view="termine" class="acc-view">
+          <h2 class="acc-h">Anstehend</h2>
+          <ul class="appt-list" data-upcoming></ul>
+          <h2 class="acc-h">Vergangen</h2>
+          <ul class="appt-list appt-list--past" data-past></ul>
+        </div>
+        <div data-view="bewertungen" class="acc-view" hidden>
+          <h2 class="acc-h">Deine Bewertungen</h2>
+          <p class="acc-note">Neue Bewertungen erscheinen auf der Website, sobald das Studio sie freigegeben hat.</p>
+          <ul class="rev-list" data-my-reviews></ul>
+        </div>
+        <div data-view="profil" class="acc-view" hidden>
+          <h2 class="acc-h">Profil</h2>
+          <form class="profile-form" data-profile novalidate>
+            <div class="field-row">
+              <div class="field"><label class="label" for="p-name">Name</label><input class="input" type="text" id="p-name" name="name" autocomplete="name"></div>
+              <div class="field"><label class="label" for="p-phone">Telefon</label><input class="input" id="p-phone" name="phone" type="tel" autocomplete="tel"></div>
+            </div>
+            <div class="field"><label class="label" for="p-email">E-Mail</label><input class="input" id="p-email" name="email" type="email" disabled></div>
+            <div class="field"><label class="label" for="p-pw">Neues Passwort <span class="label__hint">leer lassen, um es zu behalten</span></label><input class="input" id="p-pw" name="password" type="password" autocomplete="new-password"></div>
+            <p class="form-error" data-error role="alert"></p>
+            <div class="row-actions"><button class="btn btn-dark btn-sm" type="submit">Speichern</button><button class="link-quiet link-quiet--dark" type="button" data-logout>Abmelden</button></div>
+          </form>
+          <div class="danger-zone">
+            <p><strong>Konto löschen.</strong> Deine Daten werden entfernt, vergangene Termine bleiben anonym für die Buchhaltung des Studios.</p>
+            <button class="btn btn-danger btn-sm" type="button" data-delete>Konto löschen</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="../assets/js/app/account.js"></script>
+</body>
+</html>

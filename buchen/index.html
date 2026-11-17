@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Termin buchen – BRK Studio Köln</title>
+  <meta name="description" content="Freie Termine bei BRK Studio in Köln online buchen.">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="../assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <script src="../assets/js/boot.js"></script>
+</head>
+<body class="app">
+  <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
+  <div class="demo-bar" role="note">
+    <div class="wrap demo-bar__in">
+      <p><span class="demo-flag__dot" aria-hidden="true"></span><strong>Demo-Plattform.</strong> <span class="demo-bar__more">Alle Daten bleiben in diesem Browser. Einträge mit „Beispiel“ sind Beispieldaten.</span></p>
+      <button type="button" class="demo-bar__reset" data-demo-reset>Demo zurücksetzen</button>
+    </div>
+  </div>
+  <header class="app-header">
+    <div class="wrap app-header__in">
+      <a href="../" class="brand" aria-label="BRK Studio – zur Website"><img src="../assets/img/logo-light.svg" width="200" height="104" alt="BRK Studio Köln"></a>
+      <nav class="app-nav" aria-label="Plattform">
+        <a href="../" class="app-nav__site">Website</a>
+        <a href="../buchen/" aria-current="page">Buchen</a>
+        <a href="../konto/" data-account-link data-admin="../admin/">Anmelden</a>
+      </nav>
+    </div>
+  </header>
+  <main id="inhalt" class="bk" data-bk>
+    <section class="app-hero">
+      <div class="wrap app-hero__in">
+        <p class="eyebrow eyebrow--light">Online buchen</p>
+        <h1 class="app-hero__title">Dein Stuhl ist frei.</h1>
+        <p class="app-hero__lede">Leistung, Team und Uhrzeit wählen. Du siehst nur Zeiten, die wirklich frei sind.</p>
+      </div>
+    </section>
+
+    <div class="wrap bk__grid">
+      <div class="bk__flow" data-bk-flow>
+        <section class="bk-step" data-step="service" aria-labelledby="st-service">
+          <header class="bk-step__head"><h2 id="st-service" class="bk-step__title">Leistung</h2><p class="bk-step__value" data-val="service"></p></header>
+          <div class="bk-step__body"><div class="svc-list" data-services role="radiogroup" aria-labelledby="st-service"></div></div>
+        </section>
+
+        <section class="bk-step" data-step="staff" aria-labelledby="st-staff">
+          <header class="bk-step__head"><h2 id="st-staff" class="bk-step__title">Bei wem</h2><p class="bk-step__value" data-val="staff"></p></header>
+          <div class="bk-step__body"><div class="staff-pick" data-staff role="radiogroup" aria-labelledby="st-staff"></div></div>
+        </section>
+
+        <section class="bk-step" data-step="time" aria-labelledby="st-time">
+          <header class="bk-step__head"><h2 id="st-time" class="bk-step__title">Termin</h2><p class="bk-step__value" data-val="time"></p></header>
+          <div class="bk-step__body">
+            <div class="days-nav">
+              <button type="button" class="icon-btn" data-days-prev aria-label="Frühere Tage"><span class="chev chev--l" aria-hidden="true"></span></button>
+              <p class="days-nav__label" data-days-label aria-live="polite"></p>
+              <button type="button" class="icon-btn" data-days-next aria-label="Spätere Tage"><span class="chev" aria-hidden="true"></span></button>
+            </div>
+            <div class="days days--wide" data-days role="radiogroup" aria-label="Tag"></div>
+            <div class="slot-wrap" data-slots aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section class="bk-step" data-step="account" aria-labelledby="st-account">
+          <header class="bk-step__head"><h2 id="st-account" class="bk-step__title">Deine Daten</h2><p class="bk-step__value" data-val="account"></p></header>
+          <div class="bk-step__body" data-account></div>
+        </section>
+      </div>
+
+      <aside class="bk__summary" aria-labelledby="sum-title">
+        <div class="sum" data-summary>
+          <h2 id="sum-title" class="sum__title">Deine Auswahl</h2>
+          <dl class="sum__list">
+            <div><dt>Leistung</dt><dd data-sum="service">–</dd></div>
+            <div><dt>Bei</dt><dd data-sum="staff">–</dd></div>
+            <div><dt>Termin</dt><dd data-sum="time">–</dd></div>
+            <div><dt>Dauer</dt><dd data-sum="duration">–</dd></div>
+          </dl>
+          <div class="sum__total"><span>Preis</span><strong data-sum="price">–</strong></div>
+          <label class="sum__note"><span class="label">Nachricht <span class="label__hint">optional</span></span><textarea class="input input--area" rows="2" maxlength="500" data-note placeholder="Wünsche, Referenzbild auf Instagram…"></textarea></label>
+          <button type="button" class="btn btn-dark btn-wide" data-book-submit disabled>Verbindlich buchen</button>
+          <p class="sum__hint" data-sum-hint>Wähle Leistung, Tag und Uhrzeit.</p>
+          <p class="sum__policy">Kostenlos stornieren oder verschieben bis 12 Stunden vorher im Kundenkonto.</p>
+        </div>
+      </aside>
+    </div>
+
+    <section class="bk-done" data-bk-done hidden tabindex="-1" aria-labelledby="done-title">
+      <div class="wrap bk-done__in">
+        <p class="eyebrow">Bestätigt</p>
+        <h2 id="done-title" class="bk-done__title">Sitzt. Bis bald.</h2>
+        <p class="bk-done__text" data-done-text></p>
+        <div class="bk-done__actions">
+          <a class="btn btn-dark" href="../konto/">Zu meinen Terminen</a>
+          <a class="btn btn-outline" data-ics download="brk-studio-termin.ics" href="#">In den Kalender</a>
+          <a class="link-quiet link-quiet--dark" href="../">Zur Website</a>
+        </div>
+        <p class="bk-done__note">Demo: Es wurde keine E-Mail verschickt. Der Termin ist nur in diesem Browser gespeichert und erscheint sofort im Admin-Kalender.</p>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="../assets/js/app/booking.js"></script>
+</body>
+</html>
