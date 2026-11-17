@@ -15,9 +15,15 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/styles.css">
-  <script src="assets/js/boot.js"></script>
+  <script src="assets/js/boot.js" data-intro></script>
 </head>
 <body class="bg-night text-white antialiased">
+  <div class="intro" data-intro aria-hidden="true">
+    <div class="intro__half intro__half--top"><div class="intro__img"></div></div>
+    <div class="intro__half intro__half--bot"><div class="intro__img"></div></div>
+    <div class="intro__cut"><span class="intro__line"></span><span class="intro__sc"><svg viewBox="0 0 40 24" focusable="false"><g class="sc__b sc__b--1"><circle cx="6" cy="6" r="4.2"/><path d="M9.6 8.2 L38 13.4"/></g><g class="sc__b sc__b--2"><circle cx="6" cy="18" r="4.2"/><path d="M9.6 15.8 L38 10.6"/></g></svg></span></div>
+    <p class="intro__skip">Klicken oder Taste zum Überspringen</p>
+  </div>
   <a class="skip-link" href="#inhalt">Zum Inhalt springen</a>
 
   <!-- Kopfzeile: transparent über dem Hero, danach ruhige dunkle Fläche -->
@@ -196,6 +202,34 @@
       </div>
     </section>
 
+    <!-- ============ WOHNZIMMER ============ -->
+    <section class="wz bg-night" id="wohnzimmer" aria-label="Wie im Wohnzimmer" data-wz>
+      <div class="wz__stage">
+        <svg class="wz__svg" viewBox="0 0 1000 150" role="img" aria-label="Wohnzimmer" focusable="false">
+          <defs><clipPath id="wz-clip"><text class="wz__text" x="0" y="140" textLength="1000" lengthAdjust="spacing">Wohnzimmer</text></clipPath></defs>
+          <g clip-path="url(#wz-clip)">
+            <rect x="0" y="0" width="1000" height="150" fill="#1A1A1A"/>
+            <image data-wz-img data-href="assets/img/real-salon-1600.webp" x="0" y="-260" width="1000" height="750" preserveAspectRatio="xMidYMid slice"/>
+            <image data-wz-img data-href="assets/img/real-stuhl-1000.webp" x="0" y="-260" width="1000" height="750" preserveAspectRatio="xMidYMid slice"/>
+            <image data-wz-img data-href="assets/img/real-fassade-1600.webp" x="0" y="-260" width="1000" height="750" preserveAspectRatio="xMidYMid slice"/>
+          </g>
+        </svg>
+        <svg class="wz__svg wz__svg--m" viewBox="0 0 600 362" aria-hidden="true" focusable="false">
+          <defs><clipPath id="wz-clip-m"><text class="wz__text wz__text--m wz__text--big" x="0" y="181" textLength="600" lengthAdjust="spacing">Wohn</text><text class="wz__text wz__text--m" x="0" y="352" textLength="600" lengthAdjust="spacing">zimmer</text></clipPath></defs>
+          <g clip-path="url(#wz-clip-m)">
+            <rect x="0" y="0" width="600" height="362" fill="#1A1A1A"/>
+            <image data-wz-img data-href="assets/img/real-salon-900.webp" x="0" y="-44" width="600" height="450" preserveAspectRatio="xMidYMid slice"/>
+            <image data-wz-img data-href="assets/img/real-stuhl-600.webp" x="0" y="-44" width="600" height="450" preserveAspectRatio="xMidYMid slice"/>
+            <image data-wz-img data-href="assets/img/real-fassade-900.webp" x="0" y="-44" width="600" height="450" preserveAspectRatio="xMidYMid slice"/>
+          </g>
+        </svg>
+      </div>
+      <div class="wrap wz__foot">
+        <p class="wz__note">Echte Fotos aus dem Studio</p>
+        <p class="wz__addr">Fleischmengergasse 29 · am Neumarkt</p>
+      </div>
+    </section>
+
     <!-- ============ TEAM ============ -->
     <section class="section bg-paper text-ink" id="team" aria-labelledby="team-title">
       <div class="wrap">
@@ -323,6 +357,7 @@
     <section class="section game-sec" id="spiel" aria-labelledby="spiel-title">
       <div class="wrap game" data-game>
         <div class="game__intro">
+          <div class="burak-inline" data-burak-inline aria-hidden="true"><span class="burak-inline__say">Jetzt du. Hier ist die Schere.</span></div>
           <p class="eyebrow" data-reveal>Zum Mitmachen</p>
           <h2 id="spiel-title" class="h2" data-reveal>Einmal Burak sein.</h2>
           <p class="lede" id="spiel-hilfe" data-reveal>Schnitt wählen, dann mit gedrückter Maus oder dem Finger durch die Haare ziehen. Burak schneidet genau dort, wo deine Linie die Strähnen kreuzt. Die gestrichelte Linie zeigt die Zielform.</p>
@@ -438,6 +473,7 @@
   <script src="assets/vendor/lenis.min.js" defer></script>
   <script src="assets/js/main.js" defer></script>
   <script src="assets/js/game.js" defer></script>
+  <script src="assets/js/fx.js" defer></script>
   <script type="module" src="assets/js/app/site.js"></script>
 </body>
 </html>
